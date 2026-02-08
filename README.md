@@ -54,6 +54,7 @@ IDE: Visual Studio
 
 ## Сборка проекта
 git clone https://github.com/vitalikkontr/WindowsTweaks-Pro.git
+
 cd WindowsTweaks-Pro
 dotnet build
 
