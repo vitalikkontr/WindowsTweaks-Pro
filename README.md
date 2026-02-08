@@ -1,5 +1,5 @@
-<img width="1238" height="909" alt="2026-02-08_033633" src="https://github.com/user-attachments/assets/e2252abe-0c1d-44df-b9a2-12fd9d6bf884" />
-<div align="center">
+<div align="center"><img width="1238" height="909" alt="2026-02-08_033633" src="https://github.com/user-attachments/assets/e2252abe-0c1d-44df-b9a2-12fd9d6bf884" />
+
 # WindowsTweaks Профессиональная ⚡
 </div>
 ## Настройка и оптимизация Windows с удобным графическим интерфейсом
