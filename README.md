@@ -1,4 +1,5 @@
 <img width="1238" height="909" alt="2026-02-08_033633" src="https://github.com/user-attachments/assets/e2252abe-0c1d-44df-b9a2-12fd9d6bf884" />
+
 WindowsTweaks Профессиональная ⚡
 
 Программа для настройки и оптимизации Windows с графическим интерфейсом.
