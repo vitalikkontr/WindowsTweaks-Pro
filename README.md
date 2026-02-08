@@ -1,8 +1,10 @@
 <div align="center"><img width="1238" height="909" alt="2026-02-08_033633" src="https://github.com/user-attachments/assets/e2252abe-0c1d-44df-b9a2-12fd9d6bf884" />
 
 # WindowsTweaks Профессиональная ⚡
-</div>
+
 ## Настройка и оптимизация Windows с удобным графическим интерфейсом
+
+</div>
 
 <div align="center"> <img src="https://img.shields.io/badge/.NET-8.0-blue" alt=".NET 8.0"> <img src="https://img.shields.io/badge/Windows-10%2F11-brightgreen" alt="Windows 10/11"> <img src="https://img.shields.io/badge/UI-Windows%20Forms-orange" alt="Windows Forms"> </div>
 
