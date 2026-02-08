@@ -1,0 +1,25 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+
+# User files
+*.user
+*.suo
+*.cache
+*.log
+
+# Build
+*.exe
+*.dll
+*.pdb
+
+# Publish
+publish/
+
+# Inno Setup output
+/Output/
+/Release/
+
+# Config
+config.ini

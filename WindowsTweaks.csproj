@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>WindowsTweaks</AssemblyName>
+    <RootNamespace>WindowsTweaks</RootNamespace>
+    <Version>2.0.0</Version>
+    <Authors>Виталий Николаевич (vitalikkontr)</Authors>
+    <Company>WindowsTweaks Pro Edition</Company>
+    <Product>WindowsTweaks Pro - Системные твики Windows</Product>
+    <Description>Профессиональный инструмент для оптимизации и настройки Windows. Добавление системных инструментов в контекстное меню "Этот компьютер".</Description>
+    <Copyright>© 2026 Виталий Николаевич (vitalikkontr)</Copyright>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+</Project>
