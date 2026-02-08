@@ -5,8 +5,17 @@
 ## Настройка и оптимизация Windows с удобным графическим интерфейсом
 
 </div>
-
-<div align="center"> <img src="https://img.shields.io/badge/.NET-8.0-blue" alt=".NET 8.0"> <img src="https://img.shields.io/badge/Windows-10%2F11-brightgreen" alt="Windows 10/11"> <img src="https://img.shields.io/badge/UI-Windows%20Forms-orange" alt="Windows Forms"> </div>
+<div align="center">
+<a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">
+<img src="https://img.shields.io/badge/.NET-8.0-blue" alt=".NET 8.0">
+</a>
+<a href="https://www.microsoft.com/windows" target="_blank">
+<img src="https://img.shields.io/badge/Windows-10%2F11-brightgreen" alt="Windows 10/11">
+</a>
+<a href="https://learn.microsoft.com/en-us/dotnet/desktop/winforms/" target="_blank">
+<img src="https://img.shields.io/badge/UI-Windows%20Forms-orange" alt="Windows Forms">
+</a>
+</div>
 
 ## 🚀 Возможности
 
