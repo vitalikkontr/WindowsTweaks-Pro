@@ -172,10 +172,13 @@ namespace WindowsTweaks
             };
             ContentPanel.Children.Add(description);
 
-            // Секция управления контекстным меню
+            // ═══════════════════════════════════════════════════════════
+            // СЕКЦИЯ 1: КОНТЕКСТНОЕ МЕНЮ "ЭТОТ КОМПЬЮТЕР"
+            // ═══════════════════════════════════════════════════════════
+            
             var menuTitle = new TextBlock
             {
-                Text = "📋 УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"ЭТОТ КОМПЬЮТЕР\"",
+                Text = "📋 УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"ЭТОТ КОМПЬЮТЕР\" (ПКМ)",
                 FontSize = 14,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(100, 181, 246)),
@@ -196,7 +199,7 @@ namespace WindowsTweaks
             };
             ContentPanel.Children.Add(menuDescription);
 
-            // Показываем статус установки
+            // Показываем статус установки для "Этот компьютер"
             var statusPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -226,7 +229,7 @@ namespace WindowsTweaks
             statusPanel.Children.Add(statusText);
             ContentPanel.Children.Add(statusPanel);
 
-            // Панель кнопок для контекстного меню
+            // Панель кнопок для контекстного меню "Этот компьютер"
             var menuButtonsPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -286,6 +289,143 @@ namespace WindowsTweaks
                 Background = new SolidColorBrush(Color.FromRgb(60, 60, 60))
             };
             ContentPanel.Children.Add(separator);
+
+            // ═══════════════════════════════════════════════════════════
+            // СЕКЦИЯ 2: КОНТЕКСТНОЕ МЕНЮ РАБОЧЕГО СТОЛА
+            // ═══════════════════════════════════════════════════════════
+            
+            var desktopMenuTitle = new TextBlock
+            {
+                Text = "🖥️ УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"РАБОЧЕГО СТОЛА\" (ПКМ)",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+            ContentPanel.Children.Add(desktopMenuTitle);
+
+            var desktopMenuDescription = new TextBlock
+            {
+                Text = "Добавьте системные инструменты в контекстное меню рабочего стола (ПКМ на пустом месте):\n\n" +
+                       "📋 Основные инструменты:\n" +
+                       "• Администрирование • Указатели мыши • Свойства папки\n" +
+                       "• Сетевые подключения • Программы и компоненты\n" +
+                       "• Редактор реестра • Диспетчер задач\n\n" +
+                       "📂 Подменю:\n" +
+                       "• Персонализация+ (темы, цвета, фон, шрифты и др.)\n" +
+                       "• Панель настроек (система, дисплей, звук, питание и др.)",
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 180)),
+                Margin = new Thickness(0, 0, 0, 15),
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 20
+            };
+            ContentPanel.Children.Add(desktopMenuDescription);
+
+            // Статус установки для меню рабочего стола
+            var desktopStatusPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 0, 0, 15)
+            };
+
+            var desktopStatusIcon = new TextBlock
+            {
+                FontSize = 16,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+
+            var desktopStatusText = new TextBlock
+            {
+                FontSize = 13,
+                FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            bool desktopToolsInstalled = DesktopContextMenu.AreDesktopToolsInstalled();
+            if (desktopToolsInstalled)
+            {
+                desktopStatusIcon.Text = "✅";
+                desktopStatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                desktopStatusText.Text = "Инструменты установлены в контекстное меню рабочего стола";
+                desktopStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+            }
+            else
+            {
+                desktopStatusIcon.Text = "⭕";
+                desktopStatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+                desktopStatusText.Text = "Инструменты не установлены";
+                desktopStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
+            }
+
+            desktopStatusPanel.Children.Add(desktopStatusIcon);
+            desktopStatusPanel.Children.Add(desktopStatusText);
+            ContentPanel.Children.Add(desktopStatusPanel);
+
+            // Кнопки управления для рабочего стола
+            var desktopButtonsPanel = new WrapPanel
+            {
+                Margin = new Thickness(0, 10, 0, 20)
+            };
+
+            var addDesktopButton = new Button
+            {
+                Content = "➕ Добавить в меню рабочего стола",
+                Width = 270,
+                Height = 40,
+                Margin = new Thickness(0, 0, 10, 10),
+                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold
+            };
+            addDesktopButton.Click += AddDesktopContextMenuItems_Click;
+
+            var removeDesktopButton = new Button
+            {
+                Content = "🗑️ Удалить из меню рабочего стола",
+                Width = 270,
+                Height = 40,
+                Margin = new Thickness(0, 0, 10, 10),
+                Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold
+            };
+            removeDesktopButton.Click += RemoveDesktopContextMenuItems_Click;
+
+            var diagnosticDesktopButton = new Button
+            {
+                Content = "🔍 Диагностика меню рабочего стола",
+                Width = 270,
+                Height = 40,
+                Margin = new Thickness(0, 0, 0, 10),
+                Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold
+            };
+            diagnosticDesktopButton.Click += DiagnosticDesktopContextMenu_Click;
+
+            desktopButtonsPanel.Children.Add(addDesktopButton);
+            desktopButtonsPanel.Children.Add(removeDesktopButton);
+            desktopButtonsPanel.Children.Add(diagnosticDesktopButton);
+            ContentPanel.Children.Add(desktopButtonsPanel);
+
+            // Разделитель
+            var separator2 = new System.Windows.Controls.Separator
+            {
+                Margin = new Thickness(0, 20, 0, 20),
+                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
+                Height = 2
+            };
+            ContentPanel.Children.Add(separator2);
 
             // Заголовок для быстрого запуска
             var quickLaunchTitle = new TextBlock
@@ -452,9 +592,9 @@ namespace WindowsTweaks
         private void HelpButton_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
-                "╔═══════════════════════════════════════════════╗\n" +
+                "╔═════════════════════════════════════════════╗\n" +
                 "║       СПРАВКА - WindowsTweaks Pro           ║\n" +
-                "╚═══════════════════════════════════════════════╝\n\n" +
+                "╚═════════════════════════════════════════════╝\n\n" +
                 "📋 ИНСТРУКЦИЯ ПО ИСПОЛЬЗОВАНИЮ:\n\n" +
                 "1️⃣ Выберите категорию настроек в левом меню\n" +
                 "   (Производительность, Конфиденциальность и т.д.)\n\n" +
@@ -469,8 +609,9 @@ namespace WindowsTweaks
                 "• Некоторые изменения требуют перезагрузки\n\n" +
                 "🎯 ДОБАВЛЕНИЕ ПУНКТОВ В МЕНЮ:\n\n" +
                 "Раздел 'Инструменты администрирования' позволяет\n" +
-                "добавить системные утилиты в контекстное меню\n" +
-                "\"Этот компьютер\" (ПКМ)\n\n" +
+                "добавить системные утилиты в контекстные меню:\n" +
+                "• \"Этот компьютер\" (ПКМ)\n" +
+                "• Рабочий стол (ПКМ на пустом месте)\n\n" +
                 "👤 Разработчик: Виталий Николаевич (vitalikkontr)",
                 "Справка - WindowsTweaks Pro",
                 MessageBoxButton.OK,
@@ -480,21 +621,22 @@ namespace WindowsTweaks
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
-                "╔═══════════════════════════════════════════════╗\n" +
-                "║   WindowsTweaks Pro Edition v2.1            ║\n" +
-                "╚═══════════════════════════════════════════════╝\n\n" +
+                "╔═════════════════════════════════════════════╗\n" +
+                "║   WindowsTweaks Pro Edition v2.2            ║\n" +
+                "╚═════════════════════════════════════════════╝\n\n" +
                 "🎯 Профессиональный инструмент для оптимизации\n" +
                 "   и настройки операционной системы Windows\n\n" +
                 "✨ ОСНОВНЫЕ ВОЗМОЖНОСТИ:\n" +
                 "   • Оптимизация производительности\n" +
                 "   • Настройка конфиденциальности\n" +
                 "   • Управление службами Windows\n" +
-                "   • Добавление системных инструментов\n" +
-                "     в контекстное меню \"Этот компьютер\"\n" +
-                "   • Подменю \"Безопасный режим\" с 4 вариантами\n\n" +
+                "   • Контекстное меню \"Этот компьютер\"\n" +
+                "     (8 инструментов + Безопасный режим)\n" +
+                "   • Контекстное меню рабочего стола\n" +
+                "     (11 инструментов + 2 подменю)\n\n" +
                 "👤 Разработчик:\n" +
                 "   Виталий Николаевич (vitalikkontr)\n\n" +
-                "📅 Дата сборки: 08.02.2026\n\n" +
+                "📅 Дата сборки: 13.02.2026\n\n" +
                 "© 2026 WindowsTweaks Pro Edition\n" +
                 "Все права защищены.",
                 "О программе WindowsTweaks Pro",
@@ -502,7 +644,10 @@ namespace WindowsTweaks
                 MessageBoxImage.Information);
         }
 
-        // Утилиты
+        // ═══════════════════════════════════════════════════════════════════
+        // УТИЛИТЫ
+        // ═══════════════════════════════════════════════════════════════════
+        
         private void CleanupDisk() => StartProcess("cleanmgr.exe");
         private void OpenTaskManager() => StartProcess("taskmgr.exe");
         private void OpenSystemInfo() => StartProcess("msinfo32.exe");
@@ -512,7 +657,6 @@ namespace WindowsTweaks
         private void OpenDiskManagement() => StartMmc("diskmgmt.msc");
         private void OpenNetworkConnections() => StartProcess("ncpa.cpl");
 
-        // Вспомогательные методы для запуска процессов
         private void StartProcess(string fileName, string arguments = "")
         {
             try
@@ -553,12 +697,12 @@ namespace WindowsTweaks
             }
         }
 
-        // Административные инструменты
-        private void OpenAdministration()
-        {
-            StartProcess("control", "admintools");
-        }
-
+        // ═══════════════════════════════════════════════════════════════════
+        // АДМИНИСТРАТИВНЫЕ ИНСТРУМЕНТЫ
+        // ═══════════════════════════════════════════════════════════════════
+        
+        private void OpenAdministration() => StartProcess("control", "admintools");
+        
         private void OpenSafeMode()
         {
             var result = MessageBox.Show(
@@ -589,33 +733,15 @@ namespace WindowsTweaks
             }
         }
 
-        private void OpenDeviceManager()
-        {
-            StartMmc("devmgmt.msc");
-        }
-
-        private void OpenControlPanel()
-        {
-            StartProcess("control");
-        }
-
-        private void OpenProgramsAndFeatures()
-        {
-            StartProcess("appwiz.cpl");
-        }
-
+        private void OpenDeviceManager() => StartMmc("devmgmt.msc");
+        private void OpenControlPanel() => StartProcess("control");
+        private void OpenProgramsAndFeatures() => StartProcess("appwiz.cpl");
+        
         private void OpenGroupPolicy()
         {
             try
             {
-                var psi = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "mmc.exe",
-                    Arguments = "gpedit.msc",
-                    UseShellExecute = true
-                };
-                System.Diagnostics.Process.Start(psi);
-                StatusText.Text = "✅ Запущено: gpedit.msc";
+                StartMmc("gpedit.msc");
             }
             catch
             {
@@ -628,22 +754,14 @@ namespace WindowsTweaks
             }
         }
 
-        private void OpenComputerManagement()
-        {
-            StartMmc("compmgmt.msc");
-        }
+        private void OpenComputerManagement() => StartMmc("compmgmt.msc");
+        private void OpenResourceMonitor() => StartProcess("resmon.exe");
+        private void OpenEventViewer() => StartMmc("eventvwr.msc");
 
-        private void OpenResourceMonitor()
-        {
-            StartProcess("resmon.exe");
-        }
-
-        private void OpenEventViewer()
-        {
-            StartMmc("eventvwr.msc");
-        }
-
-        // Управление контекстным меню "Этот компьютер"
+        // ═══════════════════════════════════════════════════════════════════
+        // ОБРАБОТЧИКИ КОНТЕКСТНОГО МЕНЮ "ЭТОТ КОМПЬЮТЕР"
+        // ═══════════════════════════════════════════════════════════════════
+        
         private void AddContextMenuItems_Click(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(
@@ -676,7 +794,6 @@ namespace WindowsTweaks
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
 
-                    // Обновляем статус после добавления
                     LoadAdministrationContent();
                 }
                 catch (Exception ex)
@@ -713,7 +830,6 @@ namespace WindowsTweaks
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
 
-                    // Обновляем статус после удаления
                     LoadAdministrationContent();
                 }
                 catch (Exception ex)
@@ -734,7 +850,6 @@ namespace WindowsTweaks
             {
                 string diagnostic = ComputerContextMenu.GetDiagnosticInfo();
 
-                // Создаём окно для отображения диагностики
                 var diagnosticWindow = new Window
                 {
                     Title = "Диагностика контекстного меню",
@@ -763,6 +878,143 @@ namespace WindowsTweaks
                 scrollViewer.Content = textBlock;
                 diagnosticWindow.Content = scrollViewer;
                 diagnosticWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Ошибка диагностики:\n{ex.Message}",
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // ОБРАБОТЧИКИ КОНТЕКСТНОГО МЕНЮ РАБОЧЕГО СТОЛА
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void AddDesktopContextMenuItems_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Добавить системные инструменты в контекстное меню рабочего стола?\n\n" +
+                "📋 БУДУТ ДОБАВЛЕНЫ:\n\n" +
+                "Основные инструменты:\n" +
+                "• Администрирование\n" +
+                "• Указатели мыши\n" +
+                "• Свойства папки\n" +
+                "• Сетевые подключения\n" +
+                "• Программы и компоненты\n" +
+                "• Редактор реестра\n" +
+                "• Диспетчер задач\n\n" +
+                "Подменю:\n" +
+                "• Персонализация+ (темы, цвета, фон, шрифты и др.)\n" +
+                "• Панель настроек (система, дисплей, звук и др.)\n\n" +
+                "💡 Для доступа: щелкните ПКМ на пустом месте рабочего стола",
+                "Добавление в контекстное меню рабочего стола",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    StatusText.Text = "Добавление пунктов в контекстное меню рабочего стола...";
+                    string addResult = DesktopContextMenu.AddDesktopTools();
+
+                    MessageBox.Show(
+                        addResult,
+                        "Результат добавления",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    LoadAdministrationContent();
+                    StatusText.Text = "✅ Инструменты успешно добавлены в меню рабочего стола";
+                }
+                catch (Exception ex)
+                {
+                    StatusText.Text = "❌ Ошибка добавления пунктов в меню";
+                    MessageBox.Show(
+                        $"Не удалось добавить пункты в контекстное меню рабочего стола:\n\n{ex.Message}",
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void RemoveDesktopContextMenuItems_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Удалить системные инструменты из контекстного меню рабочего стола?\n\n" +
+                "Это действие можно отменить, снова добавив пункты через эту программу.",
+                "Удаление из контекстного меню",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    StatusText.Text = "Удаление пунктов из контекстного меню рабочего стола...";
+                    string removeResult = DesktopContextMenu.RemoveDesktopTools();
+
+                    MessageBox.Show(
+                        removeResult,
+                        "Результат удаления",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    LoadAdministrationContent();
+                    StatusText.Text = "✅ Инструменты успешно удалены из меню рабочего стола";
+                }
+                catch (Exception ex)
+                {
+                    StatusText.Text = "❌ Ошибка удаления пунктов из меню";
+                    MessageBox.Show(
+                        $"Не удалось удалить пункты из контекстного меню:\n\n{ex.Message}",
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void DiagnosticDesktopContextMenu_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string diagnostic = DesktopContextMenu.GetDiagnosticInfo();
+
+                var diagnosticWindow = new Window
+                {
+                    Title = "Диагностика контекстного меню рабочего стола",
+                    Width = 700,
+                    Height = 600,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(30, 30, 30))
+                };
+
+                var scrollViewer = new ScrollViewer
+                {
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Padding = new Thickness(20)
+                };
+
+                var textBlock = new TextBlock
+                {
+                    Text = diagnostic,
+                    Foreground = Brushes.White,
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap
+                };
+
+                scrollViewer.Content = textBlock;
+                diagnosticWindow.Content = scrollViewer;
+                diagnosticWindow.ShowDialog();
+
+                StatusText.Text = "Диагностика выполнена";
             }
             catch (Exception ex)
             {

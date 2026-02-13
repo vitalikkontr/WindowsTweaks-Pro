@@ -13,19 +13,61 @@ namespace WindowsTweaks
     public static class ComputerContextMenu
     {
         // Правильный базовый путь для контекстного меню "Этот компьютер"
-        private const string BaseRegistryPath = @"Software\Classes\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\shell";
+        private const string BaseRegistryPath =
+@"Software\Classes\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\shell";
 
-        private static readonly Dictionary<string, MenuItem> SystemTools = new Dictionary<string, MenuItem>
+        private static readonly Dictionary<string, MenuItem> SystemTools =
+        new Dictionary<string, MenuItem>
         {
-            ["AdminTools"] = new MenuItem("Администрирование", "imageres.dll,109", "control.exe /name Microsoft.AdministrativeTools"),
-            ["ControlPanel"] = new MenuItem("Панель управления", "shell32.dll,21", "control.exe"),
-            ["DeviceManager"] = new MenuItem("Диспетчер устройств", "devmgr.dll,5", "mmc.exe devmgmt.msc"),
-            ["DiskManagement"] = new MenuItem("Управление дисками", "dmdskres.dll", "mmc.exe diskmgmt.msc"),
-            ["GroupPolicy"] = new MenuItem("Редактор групповой политики", "gpedit.dll,0", "mmc.exe gpedit.msc"),
-            ["Programs"] = new MenuItem("Программы и компоненты", "appwiz.cpl,0", "control.exe appwiz.cpl"),
-            ["Registry"] = new MenuItem("Редактор реестра", "regedit.exe", "regedit.exe"),
-            ["Services"] = new MenuItem("Службы", "filemgmt.dll,0", "mmc.exe services.msc")
+            ["AdminTools"] = new MenuItem(
+                "Администрирование",
+                "imageres.dll,109",
+                "control.exe /name Microsoft.AdministrativeTools"
+            ),
+
+            ["ControlPanel"] = new MenuItem(
+                "Панель управления",
+                "shell32.dll,21",
+                "control.exe"
+            ),
+
+            ["DeviceManager"] = new MenuItem(
+                "Диспетчер устройств",
+                "devmgr.dll,5",
+                "mmc.exe devmgmt.msc"
+            ),
+
+            ["DiskManagement"] = new MenuItem(
+                "Управление дисками",
+                "dmdskres.dll,0",
+                "mmc.exe diskmgmt.msc"
+            ),
+
+            ["GroupPolicy"] = new MenuItem(
+                "Редактор групповой политики",
+                "gpedit.dll,0",
+                "mmc.exe gpedit.msc"
+            ),
+
+            ["Programs"] = new MenuItem(
+                "Программы и компоненты",
+                "appwiz.cpl,0",
+                "control.exe appwiz.cpl"
+            ),
+
+            ["Registry"] = new MenuItem(
+                "Редактор реестра",
+                "regedit.exe,0",
+                "regedit.exe"
+            ),
+
+            ["Services"] = new MenuItem(
+                "Службы",
+                "filemgmt.dll,0",
+                "mmc.exe services.msc"
+            )
         };
+
 
         // -------------------- Добавление инструментов --------------------
         public static string AddSystemTools()

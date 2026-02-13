@@ -16,10 +16,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="19_07_12.png" />
     <None Remove="app.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="19_07_12.png" />
     <Resource Include="app.ico" />
   </ItemGroup>
 
