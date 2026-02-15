@@ -22,7 +22,7 @@
 
             <!-- Границы / Ховер -->
             <SolidColorBrush x:Key="BorderBrush" Color="#3F3F46"/>
-            <SolidColorBrush x:Key="HoverBrush" Color="#2D2D30"/>
+            <SolidColorBrush x:Key="HoverBrush" Color="#2E4A2E"/>
 
 
             <!-- ===== Кнопка ===== -->

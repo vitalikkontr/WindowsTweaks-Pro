@@ -252,7 +252,7 @@ namespace WindowsTweaks
 
             var removeMenuButton = new Button
             {
-                Content = "➖ Удалить системные инструменты",
+                Content = "🗑️ Удалить системные инструменты",
                 Width = 280,
                 Height = 40,
                 Margin = new Thickness(0, 0, 15, 0),
@@ -266,8 +266,8 @@ namespace WindowsTweaks
 
             var diagnosticButton = new Button
             {
-                Content = "🔍 Диагностика",
-                Width = 140,
+                Content = "🔍 Диагностика меню Этот компьютер",
+                Width = 280,
                 Height = 40,
                 Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
                 Foreground = Brushes.White,
@@ -363,18 +363,19 @@ namespace WindowsTweaks
             ContentPanel.Children.Add(desktopStatusPanel);
 
             // Кнопки управления для рабочего стола
-            var desktopButtonsPanel = new WrapPanel
+            var desktopButtonsPanel = new StackPanel
             {
+                Orientation = Orientation.Horizontal,
                 Margin = new Thickness(0, 10, 0, 20)
             };
 
             var addDesktopButton = new Button
             {
-                Content = "➕ Добавить в меню рабочего стола",
-                Width = 270,
+                Content = "➕ Добавить в меню Рабочего Стола",
+                Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 10, 10),
-                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+                Margin = new Thickness(0, 0, 15, 0),
+                Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -385,10 +386,10 @@ namespace WindowsTweaks
 
             var removeDesktopButton = new Button
             {
-                Content = "🗑️ Удалить из меню рабочего стола",
-                Width = 270,
+                Content = "🗑️ Удалить из меню Рабочего Стола",
+                Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 10, 10),
+                Margin = new Thickness(0, 0, 15, 0),
                 Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
@@ -400,11 +401,11 @@ namespace WindowsTweaks
 
             var diagnosticDesktopButton = new Button
             {
-                Content = "🔍 Диагностика меню рабочего стола",
-                Width = 270,
+                Content = "🔍 Диагностика меню Рабочего Стола",
+                Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 0, 10),
-                Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+                Margin = new Thickness(0, 0, 0, 0),
+                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -444,7 +445,6 @@ namespace WindowsTweaks
             AddUtilityButton("⚙️ Панель управления", "Классическая панель управления", OpenControlPanel);
             AddUtilityButton("📦 Программы и компоненты", "Удаление программ", OpenProgramsAndFeatures);
             AddUtilityButton("📋 Редактор групповой политики", "Открыть gpedit.msc", OpenGroupPolicy);
-            AddUtilityButton("📁 Редактор реестра", "Открыть regedit", OpenRegistryEditor);
             AddUtilityButton("🔧 Службы", "Управление службами Windows", OpenServices);
             AddUtilityButton("💾 Управление дисками", "Открыть diskmgmt", OpenDiskManagement);
             AddUtilityButton("👤 Управление компьютером", "Открыть compmgmt.msc", OpenComputerManagement);
@@ -514,11 +514,22 @@ namespace WindowsTweaks
                 HorizontalContentAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(0, 5, 0, 5),
                 FontSize = 14,
-                Background = new SolidColorBrush(Color.FromRgb(0, 120, 212)),
+                Background = new SolidColorBrush(Color.FromRgb(66, 165, 245)), // Светло-голубой (немного темнее чем на скрине)
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 Padding = new Thickness(15, 8, 15, 8)
+            };
+
+            // Лёгкая подсветка при наведении (чуть светлее)
+            button.MouseEnter += (s, e) =>
+            {
+                button.Background = new SolidColorBrush(Color.FromRgb(100, 181, 246)); // Немного светлее
+            };
+
+            button.MouseLeave += (s, e) =>
+            {
+                button.Background = new SolidColorBrush(Color.FromRgb(66, 165, 245)); // Возврат к базовому
             };
 
             button.Click += (s, e) => action?.Invoke();
@@ -622,7 +633,7 @@ namespace WindowsTweaks
         {
             MessageBox.Show(
                 "╔═════════════════════════════════════════════╗\n" +
-                "║   WindowsTweaks Pro Edition v2.2            ║\n" +
+                "║   WindowsTweaks Pro Edition v2.3            ║\n" +
                 "╚═════════════════════════════════════════════╝\n\n" +
                 "🎯 Профессиональный инструмент для оптимизации\n" +
                 "   и настройки операционной системы Windows\n\n" +
@@ -636,7 +647,7 @@ namespace WindowsTweaks
                 "     (11 инструментов + 2 подменю)\n\n" +
                 "👤 Разработчик:\n" +
                 "   Виталий Николаевич (vitalikkontr)\n\n" +
-                "📅 Дата сборки: 13.02.2026\n\n" +
+                "📅 Дата сборки: 15.02.2026\n\n" +
                 "© 2026 WindowsTweaks Pro Edition\n" +
                 "Все права защищены.",
                 "О программе WindowsTweaks Pro",

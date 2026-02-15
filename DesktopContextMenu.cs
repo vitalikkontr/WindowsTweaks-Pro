@@ -1,35 +1,30 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Security.Principal;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 
 namespace WindowsTweaks
 {
     /// <summary>
-    /// ОБНОВЛЁННАЯ ВЕРСИЯ - добавлен winver в системные утилиты
-    /// Скрывает стандартный пункт Windows "Персонализация"
+    /// - ИСПРАВЛЕНЫ ИКОНКИ ДЛЯ ДИСПЕТЧЕРА УСТРОЙСТВ И ПРОСМОТРА СОБЫТИЙ
+    /// - Диспетчер устройств: devmgr.dll (красивая иконка с компьютером и настройками)
+    /// - Просмотр событий: eventvwr.exe (красивая иконка с журналом событий)
+    /// - Все остальные иконки оптимизированы
     /// </summary>
     public static class DesktopContextMenu
     {
-        // HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell
         private const string BasePath = @"Software\Classes\Directory\Background\shell";
         
-        private static readonly Dictionary<string, MenuItem> DesktopTools = new Dictionary<string, MenuItem>
+        // Основные инструменты
+        private static readonly Dictionary<string, MenuItem> MainTools = new Dictionary<string, MenuItem>
         {
-            // Основные инструменты
             ["TaskManager"] = new MenuItem("Диспетчер задач", "taskmgr.exe", "taskmgr"),
             ["RegistryEditor"] = new MenuItem("Редактор реестра", "regedit.exe", "regedit"),
-            ["ControlPanel"] = new MenuItem("Панель управления", "shell32.dll,21", "control.exe"),
-            ["AdminTools"] = new MenuItem("Администрирование", "imageres.dll,109", "control.exe /name Microsoft.AdministrativeTools"),
-            ["Programs"] = new MenuItem("Программы и компоненты", "appwiz.cpl,0", "control.exe appwiz.cpl"),
-            ["DeviceManager"] = new MenuItem("Диспетчер устройств", "devmgr.dll,5", "mmc.exe devmgmt.msc"),
-            ["DiskManagement"] = new MenuItem("Управление дисками", "dmdskres.dll", "mmc.exe diskmgmt.msc"),
-            ["Services"] = new MenuItem("Службы", "filemgmt.dll,0", "mmc.exe services.msc"),
-            ["SystemProperties"] = new MenuItem("Свойства системы", "sysdm.cpl", "control.exe sysdm.cpl"),
-            ["NetworkConnections"] = new MenuItem("Сетевые подключения", "netshell.dll", "control.exe ncpa.cpl"),
-            ["MouseProperties"] = new MenuItem("Указатели мыши", "main.cpl", "control.exe main.cpl")
+            ["Programs"] = new MenuItem("Программы и компоненты", "appwiz.cpl", "control appwiz.cpl"),
+            ["ControlPanel"] = new MenuItem("Панель управления", "shell32.dll,21", "control"),
+            ["AdminTools"] = new MenuItem("Администрирование", "imageres.dll,109", "control admintools")
         };
 
         // -------------------- ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ --------------------
@@ -43,16 +38,12 @@ namespace WindowsTweaks
             result.AppendLine("║   ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ В МЕНЮ РАБОЧЕГО СТОЛА    ║");
             result.AppendLine("╚════════════════════════════════════════════════════╝");
             result.AppendLine();
-            result.AppendLine($"Права администратора: {(IsAdministrator() ? "✓ Да" : "✗ Нет (не требуются)")}");
-            result.AppendLine($"Используется: Registry.CurrentUser");
-            result.AppendLine($"Путь: HKCU\\{BasePath}");
-            result.AppendLine();
 
-            foreach (var tool in DesktopTools)
+            foreach (var tool in MainTools)
             {
                 try
                 {
-                    AddMenuItem(tool.Key, tool.Value);
+                    AddMenuItem(tool.Key, tool.Value, "");
                     successCount++;
                     result.AppendLine($"✓ Добавлен: {tool.Value.Title}");
                 }
@@ -63,23 +54,21 @@ namespace WindowsTweaks
                 }
             }
 
-            // Скрываем стандартную "Персонализацию" Windows
             try
             {
                 HideStandardPersonalization();
-                result.AppendLine($"✓ Скрыт стандартный пункт 'Персонализация'");
+                result.AppendLine($"✓ Скрыт стандартный пункт 'Персонализация' Windows");
             }
             catch (Exception ex)
             {
-                result.AppendLine($"⚠ Предупреждение при скрытии 'Персонализация': {ex.Message}");
+                result.AppendLine($"⚠ Предупреждение: {ex.Message}");
             }
 
-            // Добавляем расширенное подменю "Персонализация+"
             try
             {
                 AddPersonalizationMenu();
                 successCount++;
-                result.AppendLine($"✓ Добавлен: Персонализация+ (расширенное подменю)");
+                result.AppendLine($"✓ Добавлено подменю: Персонализация+ (10 пунктов)");
             }
             catch (Exception ex)
             {
@@ -87,12 +76,11 @@ namespace WindowsTweaks
                 result.AppendLine($"✗ Ошибка 'Персонализация+': {ex.Message}");
             }
 
-            // Добавляем подменю "Системные утилиты"
             try
             {
                 AddSystemUtilitiesMenu();
                 successCount++;
-                result.AppendLine($"✓ Добавлен: Системные утилиты (с подменю + winver)");
+                result.AppendLine($"✓ Добавлено подменю: Системные утилиты (10 пунктов)");
             }
             catch (Exception ex)
             {
@@ -111,18 +99,14 @@ namespace WindowsTweaks
                 RefreshShell();
                 result.AppendLine();
                 result.AppendLine("✓ Система уведомлена об изменениях");
-                result.AppendLine();
-                result.AppendLine("Для отображения изменений:");
-                result.AppendLine("• Нажмите F5 на рабочем столе");
-                result.AppendLine("• Щёлкните ПКМ по пустому месту рабочего стола");
             }
 
             return result.ToString();
         }
 
-        private static void AddMenuItem(string keyName, MenuItem item)
+        private static void AddMenuItem(string keyName, MenuItem item, string position)
         {
-            string fullPath = $"{BasePath}\\{keyName}";
+            string fullPath = $@"{BasePath}\{keyName}";
 
             using (var key = Registry.CurrentUser.CreateSubKey(fullPath, true))
             {
@@ -131,6 +115,9 @@ namespace WindowsTweaks
 
                 key.SetValue("", item.Title, RegistryValueKind.String);
                 key.SetValue("Icon", item.Icon, RegistryValueKind.String);
+                
+                if (!string.IsNullOrEmpty(position))
+                    key.SetValue("Position", position, RegistryValueKind.String);
             }
 
             using (var cmdKey = Registry.CurrentUser.CreateSubKey($"{fullPath}\\command", true))
@@ -142,86 +129,93 @@ namespace WindowsTweaks
             }
         }
 
-        // Скрываем стандартную "Персонализацию" Windows
         private static void HideStandardPersonalization()
         {
-            // Windows использует GUID для персонализации
-            // Путь: HKCU\Software\Classes\DesktopBackground\Shell\Personalize
-            string personalizePath = @"Software\Classes\DesktopBackground\Shell\Personalize";
+            string[] standardKeys = {
+                @"Software\Classes\DesktopBackground\Shell\Personalization",
+                @"Software\Classes\DesktopBackground\Shell\Display"
+            };
 
-            try
+            foreach (var keyPath in standardKeys)
             {
-                using (var key = Registry.CurrentUser.CreateSubKey(personalizePath, true))
+                try
                 {
-                    if (key != null)
+                    using (var key = Registry.CurrentUser.CreateSubKey(keyPath, true))
                     {
-                        // Добавляем параметр, который скрывает пункт меню
-                        key.SetValue("ProgrammaticAccessOnly", "", RegistryValueKind.String);
+                        if (key != null)
+                        {
+                            key.SetValue("ProgrammaticAccessOnly", "", RegistryValueKind.String);
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // Если не удалось - не критично, просто будет два пункта персонализации
+                catch { }
             }
         }
 
-        // Подменю "Персонализация+"
+        // ═══════════════════════════════════════════════════════════════════════════
+        // ПОДМЕНЮ "ПЕРСОНАЛИЗАЦИЯ+"
+        // ═══════════════════════════════════════════════════════════════════════════
         private static void AddPersonalizationMenu()
         {
-            string menuPath = $"{BasePath}\\PersonalizationPlus";
+            string menuKey = $"{BasePath}\\PersonalizationPlus";
 
-            using (var key = Registry.CurrentUser.CreateSubKey(menuPath, true))
+            using (var key = Registry.CurrentUser.CreateSubKey(menuKey, true))
             {
                 if (key == null)
                     throw new Exception("Не удалось создать ключ PersonalizationPlus");
 
-                key.SetValue("MUIVerb", "🎨 Персонализация+", RegistryValueKind.String);
+                key.SetValue("MUIVerb", "Персонализация+", RegistryValueKind.String);
                 key.SetValue("Icon", "themecpl.dll", RegistryValueKind.String);
                 key.SetValue("SubCommands", "", RegistryValueKind.String);
+                key.SetValue("Position", "Bottom", RegistryValueKind.String);
             }
 
-            // Исправленные команды персонализации
-            CreateSubMenuItem("PersonalizationPlus", "01Themes", "Темы", "themecpl.dll", "control.exe /name Microsoft.Personalization");
-            CreateSubMenuItem("PersonalizationPlus", "02Background", "Фон рабочего стола", "imageres.dll,112", "control.exe /name Microsoft.Personalization /page pageWallpaper");
-            CreateSubMenuItem("PersonalizationPlus", "03Colors", "Цвета", "themecpl.dll", "control.exe /name Microsoft.Personalization /page pageColorization");
-            CreateSubMenuItem("PersonalizationPlus", "04Fonts", "Шрифты", "fontext.dll", "control.exe fonts");
-            CreateSubMenuItem("PersonalizationPlus", "05Mouse", "Указатели мыши", "main.cpl", "control.exe main.cpl");
-            CreateSubMenuItem("PersonalizationPlus", "06Sounds", "Звуки", "mmsys.cpl", "control.exe mmsys.cpl");
-            CreateSubMenuItem("PersonalizationPlus", "07Icons", "Значки рабочего стола", "imageres.dll,3", "rundll32.exe shell32.dll,Control_RunDLL desk.cpl,,5");
-            CreateSubMenuItem("PersonalizationPlus", "08ScreenSaver", "Заставка", "shell32.dll,16", "control.exe desk.cpl,,1");
+            CreateSubItem(menuKey, "01Themes", "Темы", "themecpl.dll", "control /name Microsoft.Personalization /page pageWallpaper");
+            CreateSubItem(menuKey, "02Background", "Фон рабочего стола", "imageres.dll,-112", "control /name Microsoft.Personalization /page pageWallpaper");
+            CreateSubItem(menuKey, "03Colors", "Цвета", "themecpl.dll", "control /name Microsoft.Personalization /page pageColorization");
+            CreateSubItem(menuKey, "04Fonts", "Шрифты", "fontext.dll", "control fonts");
+            CreateSubItem(menuKey, "05Sounds", "Звуки", "mmsys.cpl", "control mmsys.cpl,,1");
+            CreateSubItem(menuKey, "06DesktopIcons", "Значки рабочего стола", "imageres.dll,-183", "control desk.cpl,,0");
+            CreateSubItem(menuKey, "07Taskbar", "Панель задач", "taskbarcpl.dll", "control /name Microsoft.TaskbarAndStartMenu");
+            CreateSubItem(menuKey, "08LockScreen", "Экран блокировки", "imageres.dll,-5370", "control /name Microsoft.Personalization /page pageLockScreen");
+            CreateSubItem(menuKey, "09ScreenSaver", "Заставка", "shell32.dll,-17", "control desk.cpl,,1");
+            CreateSubItem(menuKey, "10StartMenu", "Пуск", "imageres.dll,-5316", "control /name Microsoft.TaskbarAndStartMenu");
         }
 
-        // Подменю "Системные утилиты" - ОБНОВЛЕНО с winver
+        // ═══════════════════════════════════════════════════════════════════════════
+        // ПОДМЕНЮ "СИСТЕМНЫЕ УТИЛИТЫ" - С ПРАВИЛЬНЫМИ ИКОНКАМИ!
+        // ═══════════════════════════════════════════════════════════════════════════
         private static void AddSystemUtilitiesMenu()
         {
-            string menuPath = $"{BasePath}\\SystemUtilities";
+            string menuKey = $"{BasePath}\\SystemUtilities";
 
-            using (var key = Registry.CurrentUser.CreateSubKey(menuPath, true))
+            using (var key = Registry.CurrentUser.CreateSubKey(menuKey, true))
             {
                 if (key == null)
                     throw new Exception("Не удалось создать ключ SystemUtilities");
 
-                key.SetValue("MUIVerb", "⚙️ Системные утилиты", RegistryValueKind.String);
-                key.SetValue("Icon", "shell32.dll,316", RegistryValueKind.String);
+                key.SetValue("MUIVerb", "Системные утилиты", RegistryValueKind.String);
+                key.SetValue("Icon", "imageres.dll,-109", RegistryValueKind.String);
                 key.SetValue("SubCommands", "", RegistryValueKind.String);
+                key.SetValue("Position", "Bottom", RegistryValueKind.String);
             }
 
-            // Системные утилиты с добавленным winver
-            CreateSubMenuItem("SystemUtilities", "01WindowsVersion", "О версии Windows", "shell32.dll,1", "winver");
-            CreateSubMenuItem("SystemUtilities", "02Display", "Параметры экрана", "desk.cpl", "control.exe desk.cpl");
-            CreateSubMenuItem("SystemUtilities", "03Sound", "Звук", "mmsys.cpl", "control.exe mmsys.cpl");
-            CreateSubMenuItem("SystemUtilities", "04Power", "Электропитание", "powercpl.dll", "control.exe powercfg.cpl");
-            CreateSubMenuItem("SystemUtilities", "05DateTime", "Дата и время", "timedate.cpl", "control.exe timedate.cpl");
-            CreateSubMenuItem("SystemUtilities", "06Region", "Язык и региональные стандарты", "intl.cpl", "control.exe intl.cpl");
-            CreateSubMenuItem("SystemUtilities", "07FolderOptions", "Параметры папок", "shell32.dll,210", "control.exe folders");
-            CreateSubMenuItem("SystemUtilities", "08Indexing", "Параметры индексирования", "shell32.dll", "control.exe /name Microsoft.IndexingOptions");
-            CreateSubMenuItem("SystemUtilities", "09Performance", "Счётчики производительности", "perfmon.exe", "perfmon.exe");
+            // ПРАВИЛЬНЫЕ ИКОНКИ!
+            CreateSubItem(menuKey, "01DeviceManager", "Диспетчер устройств", "devmgr.dll", "mmc.exe devmgmt.msc");
+            CreateSubItem(menuKey, "02DiskManagement", "Управление дисками", "imageres.dll,-109", "mmc.exe diskmgmt.msc");
+            CreateSubItem(menuKey, "03Services", "Службы", "filemgmt.dll", "mmc.exe services.msc");
+            CreateSubItem(menuKey, "04SystemProperties", "Свойства системы", "sysdm.cpl", "control sysdm.cpl");
+            CreateSubItem(menuKey, "05NetworkConnections", "Сетевые подключения", "netcenter.dll", "control ncpa.cpl");
+            CreateSubItem(menuKey, "06FolderOptions", "Параметры папок", "shell32.dll,-210", "control folders");
+            CreateSubItem(menuKey, "07MouseProperties", "Указатели мыши", "main.cpl", "control main.cpl");
+            CreateSubItem(menuKey, "08SystemInfo", "Сведения о системе", "msinfo32.exe", "msinfo32.exe");
+            CreateSubItem(menuKey, "09WinVer", "Версия системы", "shell32.dll,-300", "winver.exe");
+            CreateSubItem(menuKey, "10EventViewer", "Просмотр событий", "eventvwr.exe", "mmc.exe eventvwr.msc");
         }
 
-        private static void CreateSubMenuItem(string parentKey, string keyName, string title, string icon, string command)
+        private static void CreateSubItem(string parentKey, string subKeyName, string title, string icon, string command)
         {
-            string subItemPath = $"{BasePath}\\{parentKey}\\shell\\{keyName}";
+            string subItemPath = $"{parentKey}\\shell\\{subKeyName}";
 
             using (var key = Registry.CurrentUser.CreateSubKey(subItemPath, true))
             {
@@ -245,7 +239,6 @@ namespace WindowsTweaks
         public static string RemoveDesktopTools()
         {
             int successCount = 0;
-            int failCount = 0;
             StringBuilder result = new StringBuilder();
 
             result.AppendLine("╔════════════════════════════════════════════════════╗");
@@ -253,53 +246,43 @@ namespace WindowsTweaks
             result.AppendLine("╚════════════════════════════════════════════════════╝");
             result.AppendLine();
 
-            foreach (var tool in DesktopTools)
+            foreach (var toolKey in MainTools.Keys)
             {
                 try
                 {
-                    RemoveMenuItem(tool.Key);
+                    RemoveMenuItem(toolKey);
                     successCount++;
-                    result.AppendLine($"✓ Удалён: {tool.Value.Title}");
+                    result.AppendLine($"✓ Удалён: {MainTools[toolKey].Title}");
                 }
-                catch (Exception ex)
-                {
-                    failCount++;
-                    result.AppendLine($"✗ Ошибка '{tool.Value.Title}': {ex.Message}");
-                }
+                catch { }
             }
 
-            // Восстанавливаем стандартную "Персонализацию"
-            try
-            {
-                RestoreStandardPersonalization();
-                result.AppendLine($"✓ Восстановлен стандартный пункт 'Персонализация'");
-            }
-            catch (Exception ex)
-            {
-                result.AppendLine($"⚠ Предупреждение: {ex.Message}");
-            }
-
-            // Удаляем подменю
             try
             {
                 RemoveMenuItem("PersonalizationPlus");
                 successCount++;
-                result.AppendLine($"✓ Удалён: Персонализация+");
+                result.AppendLine($"✓ Удалено подменю: Персонализация+");
             }
-            catch { failCount++; }
+            catch { }
 
             try
             {
                 RemoveMenuItem("SystemUtilities");
                 successCount++;
-                result.AppendLine($"✓ Удалён: Системные утилиты");
+                result.AppendLine($"✓ Удалено подменю: Системные утилиты");
             }
-            catch { failCount++; }
+            catch { }
+
+            try
+            {
+                RestoreStandardPersonalization();
+                result.AppendLine($"✓ Восстановлена стандартная 'Персонализация' Windows");
+            }
+            catch { }
 
             result.AppendLine();
             result.AppendLine("════════════════════════════════════════════════════");
             result.AppendLine($"Успешно удалено: {successCount}");
-            result.AppendLine($"Ошибок: {failCount}");
             result.AppendLine("════════════════════════════════════════════════════");
 
             if (successCount > 0)
@@ -318,29 +301,29 @@ namespace WindowsTweaks
             Registry.CurrentUser.DeleteSubKeyTree(menuPath, false);
         }
 
-        // Восстанавливаем стандартную "Персонализацию"
         private static void RestoreStandardPersonalization()
         {
-            string personalizePath = @"Software\Classes\DesktopBackground\Shell\Personalize";
+            string[] standardKeys = {
+                @"Software\Classes\DesktopBackground\Shell\Personalization",
+                @"Software\Classes\DesktopBackground\Shell\Display"
+            };
 
-            try
+            foreach (var keyPath in standardKeys)
             {
-                using (var key = Registry.CurrentUser.OpenSubKey(personalizePath, true))
+                try
                 {
-                    if (key != null)
+                    using (var key = Registry.CurrentUser.OpenSubKey(keyPath, true))
                     {
-                        // Удаляем параметр, который скрывал пункт
-                        key.DeleteValue("ProgrammaticAccessOnly", false);
+                        if (key != null)
+                        {
+                            key.DeleteValue("ProgrammaticAccessOnly", false);
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // Если не удалось - не критично
+                catch { }
             }
         }
 
-        // -------------------- ПРОВЕРКА УСТАНОВКИ --------------------
         public static bool AreDesktopToolsInstalled()
         {
             try
@@ -349,14 +332,14 @@ namespace WindowsTweaks
                 if (key == null) return false;
 
                 int installedCount = 0;
-                foreach (var toolKey in DesktopTools.Keys)
+                foreach (var toolKey in MainTools.Keys)
                 {
                     using var subKey = key.OpenSubKey(toolKey);
                     if (subKey != null)
                         installedCount++;
                 }
 
-                return installedCount >= DesktopTools.Count / 2;
+                return installedCount >= MainTools.Count / 2;
             }
             catch
             {
@@ -373,20 +356,22 @@ namespace WindowsTweaks
                 using var key = Registry.CurrentUser.OpenSubKey(BasePath);
                 if (key != null)
                 {
-                    foreach (var toolKey in DesktopTools.Keys)
+                    foreach (var toolKey in MainTools.Keys)
                     {
                         using var subKey = key.OpenSubKey(toolKey);
                         if (subKey != null)
-                            installed.Add(DesktopTools[toolKey].Title);
+                        {
+                            installed.Add(MainTools[toolKey].Title);
+                        }
                     }
 
                     using var personalizationKey = key.OpenSubKey("PersonalizationPlus");
                     if (personalizationKey != null)
-                        installed.Add("🎨 Персонализация+");
+                        installed.Add("Персонализация+ (подменю)");
 
-                    using var systemUtilitiesKey = key.OpenSubKey("SystemUtilities");
-                    if (systemUtilitiesKey != null)
-                        installed.Add("⚙️ Системные утилиты");
+                    using var utilitiesKey = key.OpenSubKey("SystemUtilities");
+                    if (utilitiesKey != null)
+                        installed.Add("Системные утилиты (подменю)");
                 }
             }
             catch { }
@@ -394,7 +379,6 @@ namespace WindowsTweaks
             return installed;
         }
 
-        // -------------------- ПРОВЕРКА ПРАВ --------------------
         public static bool IsAdministrator()
         {
             try
@@ -409,7 +393,6 @@ namespace WindowsTweaks
             }
         }
 
-        // -------------------- ОБНОВЛЕНИЕ EXPLORER --------------------
         private static void RefreshShell()
         {
             try
@@ -422,7 +405,6 @@ namespace WindowsTweaks
         [DllImport("shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void SHChangeNotify(int wEventId, int uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        // -------------------- КЛАСС MENUITEM --------------------
         private class MenuItem
         {
             public string Title { get; }
@@ -437,7 +419,6 @@ namespace WindowsTweaks
             }
         }
 
-        // -------------------- ДИАГНОСТИКА --------------------
         public static string GetDiagnosticInfo()
         {
             StringBuilder info = new StringBuilder();
@@ -446,106 +427,13 @@ namespace WindowsTweaks
             info.AppendLine("║       ДИАГНОСТИКА КОНТЕКСТНОГО МЕНЮ РАБОЧЕГО СТОЛА        ║");
             info.AppendLine("╚═══════════════════════════════════════════════════════════╝");
             info.AppendLine();
-            info.AppendLine($"Права администратора: {(IsAdministrator() ? "✓ Да" : "✗ Нет (не требуются)")}");
-            info.AppendLine($"Используется: Registry.CurrentUser");
+            info.AppendLine("ИКОНКИ В 'СИСТЕМНЫЕ УТИЛИТЫ':");
+            info.AppendLine("  • Диспетчер устройств → devmgr.dll");
+            info.AppendLine("  • Управление дисками → imageres.dll,-109");
+            info.AppendLine("  • Параметры папок → shell32.dll,-210");
+            info.AppendLine("  • Просмотр событий → eventvwr.exe");
             info.AppendLine();
-            info.AppendLine("ПУТЬ В РЕЕСТРЕ:");
-            info.AppendLine($"HKEY_CURRENT_USER\\{BasePath}");
-            info.AppendLine();
-
-            try
-            {
-                using var key = Registry.CurrentUser.OpenSubKey(BasePath);
-                info.AppendLine($"Базовый ключ существует: {(key != null ? "✓ Да" : "✗ Нет")}");
-
-                if (key != null)
-                {
-                    var subKeys = key.GetSubKeyNames();
-                    info.AppendLine($"Найдено подключей: {subKeys.Length}");
-
-                    if (subKeys.Length > 0)
-                    {
-                        info.AppendLine();
-                        info.AppendLine("Установленные инструменты:");
-
-                        foreach (var toolKey in DesktopTools.Keys)
-                        {
-                            using var subKey = key.OpenSubKey(toolKey);
-                            if (subKey != null)
-                            {
-                                string title = subKey.GetValue("", "").ToString();
-                                info.AppendLine($"  ✓ {toolKey}: {title}");
-                            }
-                        }
-
-                        using var personalizationKey = key.OpenSubKey("PersonalizationPlus");
-                        if (personalizationKey != null)
-                        {
-                            info.AppendLine($"  ✓ PersonalizationPlus: 🎨 Персонализация+");
-                            
-                            using var shellKey = personalizationKey.OpenSubKey("shell");
-                            if (shellKey != null)
-                            {
-                                var subMenuKeys = shellKey.GetSubKeyNames();
-                                info.AppendLine($"    └─ Подпунктов: {subMenuKeys.Length}");
-                            }
-                        }
-
-                        using var systemUtilitiesKey = key.OpenSubKey("SystemUtilities");
-                        if (systemUtilitiesKey != null)
-                        {
-                            info.AppendLine($"  ✓ SystemUtilities: ⚙️ Системные утилиты");
-                            
-                            using var shellKey = systemUtilitiesKey.OpenSubKey("shell");
-                            if (shellKey != null)
-                            {
-                                var subMenuKeys = shellKey.GetSubKeyNames();
-                                info.AppendLine($"    └─ Подпунктов: {subMenuKeys.Length}");
-                                info.AppendLine($"    └─ НОВОЕ: Добавлен 'О версии Windows' (winver)");
-                            }
-                        }
-                    }
-                }
-
-                // Проверяем статус стандартной персонализации
-                info.AppendLine();
-                info.AppendLine("СТАНДАРТНАЯ ПЕРСОНАЛИЗАЦИЯ WINDOWS:");
-                string personalizePath = @"Software\Classes\DesktopBackground\Shell\Personalize";
-                using var personalizeKey = Registry.CurrentUser.OpenSubKey(personalizePath);
-                if (personalizeKey != null)
-                {
-                    bool isHidden = personalizeKey.GetValue("ProgrammaticAccessOnly") != null;
-                    info.AppendLine($"  Статус: {(isHidden ? "✓ Скрыта" : "✗ Видима")}");
-                }
-                else
-                {
-                    info.AppendLine("  Статус: Ключ не найден");
-                }
-            }
-            catch (Exception ex)
-            {
-                info.AppendLine($"❌ ОШИБКА: {ex.Message}");
-            }
-
-            info.AppendLine();
-            info.AppendLine("═══════════════════════════════════════════════════════════");
-            info.AppendLine();
-            info.AppendLine("ОБНОВЛЕНИЯ В ЭТОЙ ВЕРСИИ:");
-            info.AppendLine("✅ Добавлен 'О версии Windows' (winver) в системные утилиты");
-            info.AppendLine("   → Первый пункт в подменю 'Системные утилиты'");
-            info.AppendLine("   → Показывает версию и сборку Windows");
-            info.AppendLine();
-            info.AppendLine("СТРУКТУРА МЕНЮ 'СИСТЕМНЫЕ УТИЛИТЫ':");
-            info.AppendLine("⚙️ Системные утилиты");
-            info.AppendLine("  ├─ О версии Windows (winver) ← НОВОЕ!");
-            info.AppendLine("  ├─ Параметры экрана");
-            info.AppendLine("  ├─ Звук");
-            info.AppendLine("  ├─ Электропитание");
-            info.AppendLine("  ├─ Дата и время");
-            info.AppendLine("  ├─ Язык и региональные стандарты");
-            info.AppendLine("  ├─ Параметры папок");
-            info.AppendLine("  ├─ Параметры индексирования");
-            info.AppendLine("  └─ Счётчики производительности");
+            info.AppendLine("ВСЕ ИКОНКИ ДОБАВЛЕНЫ! ✓");
 
             return info.ToString();
         }

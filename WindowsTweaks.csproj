@@ -2,27 +2,43 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows8.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <AssemblyName>WindowsTweaks</AssemblyName>
     <RootNamespace>WindowsTweaks</RootNamespace>
-    <Version>2.0.0</Version>
+    <Version>2.3</Version>
     <Authors>Виталий Николаевич (vitalikkontr)</Authors>
     <Company>WindowsTweaks Pro Edition</Company>
     <Product>WindowsTweaks Pro - Системные твики Windows</Product>
     <Description>Профессиональный инструмент для оптимизации и настройки Windows. Добавление системных инструментов в контекстное меню "Этот компьютер".</Description>
     <Copyright>© 2026 Виталий Николаевич (vitalikkontr)</Copyright>
     <ApplicationIcon>app.ico</ApplicationIcon>
+    <PackageProjectUrl>https://github.com/vitalikkontr/WindowsTweaks-Pro</PackageProjectUrl>
+    <PackageIcon>app_icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="19_07_12.png" />
-    <None Remove="app.ico" />
+    <!-- Иконка ICO - для EXE и окна программы -->
+    <Content Include="app.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    
+    <!-- Иконка PNG - для интерфейса (идеальная четкость!) -->
+    <Content Include="app_icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="19_07_12.png" />
-    <Resource Include="app.ico" />
+    <!-- Иконка для NuGet пакета -->
+    <None Include="app_icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
