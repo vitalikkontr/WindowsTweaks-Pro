@@ -1,59 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-	<assemblyIdentity version="2.3.0.0" name="WindowsTweaksPro.app"/>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+
+	<assemblyIdentity
+	  version="2.4.0.0"
+	  name="WindowsTweaksPro.app" />
+
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
-			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-				<!-- 
-          НЕ ТРЕБУЕМ права администратора по умолчанию!
-          Основные функции (добавление пунктов в контекстное меню) работают без админских прав.
-          Для твиков, требующих прав, будет отображаться UAC по запросу.
-        -->
-				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
+			<requestedPrivileges>
+				<requestedExecutionLevel
+				  level="requireAdministrator"
+				  uiAccess="false" />
 			</requestedPrivileges>
 		</security>
 	</trustInfo>
-	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
-		<application>
-			<!-- Поддержка Windows 7 и выше -->
-			<!-- Windows 7 -->
-			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" />
-			<!-- Windows 8 -->
-			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" />
-			<!-- Windows 8.1 -->
-			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" />
-			<!-- Windows 10 -->
-			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
-			<!-- Windows 11 -->
-			<supportedOS Id="{5e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9b}" />
-		</application>
-	</compatibility>
-	<!-- Настройки приложения -->
-	<application xmlns="urn:schemas-microsoft-com:asm.v3">
-		<windowsSettings>
-			<!-- DPI-aware для правильного масштабирования на мониторах с высоким разрешением -->
-			<dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
-			<!-- Per-Monitor DPI Awareness V2 (Windows 10 1703+) -->
-			<dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
-			<!-- Поддержка длинных путей (более 260 символов) -->
-			<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
-			<!-- Отключение эмуляции виртуализации файловой системы и реестра -->
-			<disableWindowsFiltering xmlns="http://schemas.microsoft.com/SMI/2011/WindowsSettings">true</disableWindowsFiltering>
-		</windowsSettings>
-	</application>
-	<!-- Включение современных визуальных стилей Windows -->
+
 	<dependency>
 		<dependentAssembly>
 			<assemblyIdentity
-				type="win32"
-				name="Microsoft.Windows.Common-Controls"
-				version="6.0.0.0"
-				processorArchitecture="*"
-				publicKeyToken="6595b64144ccf1df"
-				language="*"
-        />
+			  type="win32"
+			  name="Microsoft.Windows.Common-Controls"
+			  version="6.0.0.0"
+			  processorArchitecture="*"
+			  publicKeyToken="6595b64144ccf1df"
+			  language="*" />
 		</dependentAssembly>
 	</dependency>
-	<!-- Описание приложения -->
-	<description>WindowsTweaks Pro - Профессиональный инструмент для оптимизации и настройки Windows</description>
+
 </assembly>

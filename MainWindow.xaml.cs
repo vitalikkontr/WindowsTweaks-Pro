@@ -472,6 +472,7 @@ namespace WindowsTweaks
             AddUtilityButton("🔧 Службы Windows", "Открыть services.msc", OpenServices);
             AddUtilityButton("💾 Управление дисками", "Открыть diskmgmt", OpenDiskManagement);
             AddUtilityButton("🌐 Сетевые подключения", "Открыть ncpa.cpl", OpenNetworkConnections);
+            AddUtilityButton("💿 Резервное копирование драйверов", "Создать резервную копию на Рабочем столе", BackupDrivers);
 
             StatusText.Text = "Утилиты: выберите действие";
         }
@@ -490,19 +491,141 @@ namespace WindowsTweaks
 
         private void AddTweakCheckbox(string label, string tweakKey)
         {
+            // Проверяем, применен ли твик
+            bool isApplied = tweakEngine.IsTweakApplied(tweakKey);
+            
+            // Создаем горизонтальную панель для размещения индикатора и чекбокса
+            var stackPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 8, 0, 8)
+            };
+            
+            // Индикатор статуса (зеленая галочка если применено)
+            var statusIcon = new TextBlock
+            {
+                Text = isApplied ? "✅" : "⬜",
+                FontSize = 16,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 8, 0),
+                ToolTip = isApplied ? "Твик применен" : "Твик не применен"
+            };
+            
+            // Чекбокс
             var checkbox = new CheckBox
             {
                 Content = label,
                 FontSize = 14,
                 Foreground = Brushes.White,
-                Margin = new Thickness(0, 8, 0, 8),
-                Tag = tweakKey
+                Tag = tweakKey,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            
+            // Если твик применен, делаем текст зеленым
+            if (isApplied)
+            {
+                checkbox.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80)); // Зеленый
+            }
+
+            // Флаг для отслеживания программного изменения
+            bool isUpdating = false;
+
+            // ✨ Применяем/отменяем СРАЗУ при клике пользователя
+            checkbox.Checked += async (s, e) =>
+            {
+                // Игнорируем программные изменения
+                if (isUpdating) return;
+                
+                StatusText.Text = $"⏳ Применяется: {label}...";
+                
+                try
+                {
+                    // Применяем твик СРАЗУ
+                    tweakEngine.EnableTweak(tweakKey);
+                    await tweakEngine.ApplySelectedTweakAsync(tweakKey);
+                    
+                    // Обновляем индикатор
+                    statusIcon.Text = "✅";
+                    statusIcon.ToolTip = "Твик применен";
+                    checkbox.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+                    
+                    StatusText.Text = $"✅ Применено: {label}";
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    isUpdating = true;
+                    checkbox.IsChecked = false;
+                    isUpdating = false;
+                    
+                    StatusText.Text = "❌ Требуются права администратора!";
+                    MessageBox.Show(
+                        $"Для применения твика \"{label}\" требуются права администратора.\n\n" +
+                        "Запустите программу от имени администратора.",
+                        "Недостаточно прав",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+                catch (Exception ex)
+                {
+                    isUpdating = true;
+                    checkbox.IsChecked = false;
+                    isUpdating = false;
+                    
+                    StatusText.Text = $"❌ Ошибка: {ex.Message}";
+                    MessageBox.Show(
+                        $"Ошибка применения твика:\n{ex.Message}",
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
             };
 
-            checkbox.Checked += (s, e) => tweakEngine.EnableTweak(tweakKey);
-            checkbox.Unchecked += (s, e) => tweakEngine.DisableTweak(tweakKey);
+            checkbox.Unchecked += async (s, e) =>
+            {
+                // Игнорируем программные изменения
+                if (isUpdating) return;
+                
+                StatusText.Text = $"⏳ Отменяется: {label}...";
+                
+                try
+                {
+                    // Отменяем твик СРАЗУ
+                    tweakEngine.DisableTweak(tweakKey);
+                    await tweakEngine.RevertSelectedTweakAsync(tweakKey);
+                    
+                    // Обновляем индикатор
+                    statusIcon.Text = "⬜";
+                    statusIcon.ToolTip = "Твик не применен";
+                    checkbox.Foreground = Brushes.White;
+                    
+                    StatusText.Text = $"↩️ Отменено: {label}";
+                }
+                catch (Exception ex)
+                {
+                    isUpdating = true;
+                    checkbox.IsChecked = true;
+                    isUpdating = false;
+                    
+                    StatusText.Text = $"❌ Ошибка отмены: {ex.Message}";
+                    MessageBox.Show(
+                        $"Ошибка отмены твика:\n{ex.Message}",
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            };
 
-            ContentPanel.Children.Add(checkbox);
+            // ВАЖНО: Устанавливаем галочку ПОСЛЕ добавления обработчиков
+            // Используем флаг, чтобы не вызывать применение
+            isUpdating = true;
+            checkbox.IsChecked = isApplied;
+            isUpdating = false;
+
+            // Собираем элементы
+            stackPanel.Children.Add(statusIcon);
+            stackPanel.Children.Add(checkbox);
+            
+            ContentPanel.Children.Add(stackPanel);
         }
 
         private void AddUtilityButton(string icon, string label, Action action)
@@ -561,6 +684,9 @@ namespace WindowsTweaks
                         "Успешно",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
+                    
+                    // Обновляем индикаторы после применения
+                    RefreshAllCheckboxes();
                 }
                 catch (Exception ex)
                 {
@@ -615,8 +741,6 @@ namespace WindowsTweaks
                 "⚠️ ВАЖНЫЕ РЕКОМЕНДАЦИИ:\n\n" +
                 "• Создавайте точку восстановления системы\n" +
                 "  перед применением изменений!\n\n" +
-                "• НЕ требуется запуск от имени администратора\n" +
-                "  для добавления пунктов в контекстное меню\n\n" +
                 "• Некоторые изменения требуют перезагрузки\n\n" +
                 "🎯 ДОБАВЛЕНИЕ ПУНКТОВ В МЕНЮ:\n\n" +
                 "Раздел 'Инструменты администрирования' позволяет\n" +
@@ -633,7 +757,7 @@ namespace WindowsTweaks
         {
             MessageBox.Show(
                 "╔═════════════════════════════════════════════╗\n" +
-                "║   WindowsTweaks Pro Edition v2.3            ║\n" +
+                "║   WindowsTweaks Pro Edition v2.4            ║\n" +
                 "╚═════════════════════════════════════════════╝\n\n" +
                 "🎯 Профессиональный инструмент для оптимизации\n" +
                 "   и настройки операционной системы Windows\n\n" +
@@ -647,7 +771,7 @@ namespace WindowsTweaks
                 "     (11 инструментов + 2 подменю)\n\n" +
                 "👤 Разработчик:\n" +
                 "   Виталий Николаевич (vitalikkontr)\n\n" +
-                "📅 Дата сборки: 15.02.2026\n\n" +
+                "📅 Дата сборки: 16.02.2026\n\n" +
                 "© 2026 WindowsTweaks Pro Edition\n" +
                 "Все права защищены.",
                 "О программе WindowsTweaks Pro",
@@ -667,6 +791,113 @@ namespace WindowsTweaks
         private void OpenServices() => StartMmc("services.msc");
         private void OpenDiskManagement() => StartMmc("diskmgmt.msc");
         private void OpenNetworkConnections() => StartProcess("ncpa.cpl");
+
+        private void BackupDrivers()
+        {
+            try
+            {
+                // Путь к папке на рабочем столе
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string backupFolder = System.IO.Path.Combine(desktopPath, "DriverBackup");
+                
+                // Создаём папку если её нет
+                if (!System.IO.Directory.Exists(backupFolder))
+                {
+                    System.IO.Directory.CreateDirectory(backupFolder);
+                }
+
+                // Создаём bat файл для установки драйверов
+                string installBatPath = System.IO.Path.Combine(backupFolder, "Install-all-drivers.bat");
+                string installBatContent = @"@echo off
+pnputil /add-driver *.inf /install /subdirs
+
+echo.
+echo Finished.
+echo.
+echo Reboot after pressing button.
+echo.
+
+shutdown /r /t 3
+";
+                System.IO.File.WriteAllText(installBatPath, installBatContent);
+
+                // Запускаем экспорт драйверов через DISM с правами администратора
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c dism /online /export-driver /destination:\"{backupFolder}\"",
+                    UseShellExecute = true,
+                    Verb = "runas", // Запрос прав администратора
+                    CreateNoWindow = false,
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
+                };
+
+                var process = System.Diagnostics.Process.Start(psi);
+                
+                if (process != null)
+                {
+                    StatusText.Text = "⏳ Резервное копирование драйверов... Дождитесь завершения.";
+                    
+                    // Запускаем асинхронное ожидание завершения
+                    System.Threading.Tasks.Task.Run(() =>
+                    {
+                        process.WaitForExit();
+                        
+                        // Обновляем UI в главном потоке
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (process.ExitCode == 0)
+                            {
+                                StatusText.Text = $"✅ Драйверы скопированы на Рабочий стол в папку DriverBackup";
+                                MessageBox.Show(
+                                    $"Резервное копирование драйверов завершено!\n\n" +
+                                    $"Папка: {backupFolder}\n\n" +
+                                    $"Для восстановления драйверов запустите:\n" +
+                                    $"Install-all-drivers.bat",
+                                    "Успешно",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Information);
+                                
+                                // Открываем папку с бэкапом
+                                System.Diagnostics.Process.Start("explorer.exe", backupFolder);
+                            }
+                            else
+                            {
+                                StatusText.Text = "❌ Ошибка при создании резервной копии драйверов";
+                                MessageBox.Show(
+                                    "Не удалось создать резервную копию драйверов.\n\n" +
+                                    "Убедитесь что:\n" +
+                                    "• Вы запустили программу с правами администратора\n" +
+                                    "• Достаточно места на диске",
+                                    "Ошибка",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                            }
+                        });
+                    });
+                }
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                // Пользователь отклонил UAC
+                StatusText.Text = "❌ Требуются права администратора для резервного копирования драйверов";
+                MessageBox.Show(
+                    "Для резервного копирования драйверов требуются права администратора.\n\n" +
+                    "Подтвердите запрос UAC для продолжения.",
+                    "Требуются права администратора",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                StatusText.Text = "❌ Ошибка при резервном копировании драйверов";
+                MessageBox.Show(
+                    $"Произошла ошибка:\n{ex.Message}",
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
 
         private void StartProcess(string fileName, string arguments = "")
         {
@@ -1034,6 +1265,91 @@ namespace WindowsTweaks
                     "Ошибка",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // НОВАЯ ФУНКЦИЯ: ОТМЕНА ПРИМЕНЕННЫХ ТВИКОВ (v3.0)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        private async void RevertChanges_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "⚠️ ВЫ УВЕРЕНЫ, ЧТО ХОТИТЕ ОТМЕНИТЬ ВСЕ ПРИМЕНЕННЫЕ ИЗМЕНЕНИЯ?\n\n" +
+                "Это действие восстановит систему в исходное состояние:\n\n" +
+                "✓ Все примененные твики будут отменены\n" +
+                "✓ Службы Windows будут восстановлены\n" +
+                "✓ Настройки реестра вернутся к значениям по умолчанию\n\n" +
+                "⚠️ ВНИМАНИЕ: Некоторые изменения могут потребовать перезагрузки!",
+                "Подтверждение отмены изменений",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                StatusText.Text = "⏳ Отмена изменений...";
+
+                try
+                {
+                    // Отменяем все примененные твики
+                    await tweakEngine.RevertAllTweaksAsync();
+                    
+                    StatusText.Text = "✅ Все изменения успешно отменены!";
+
+                    MessageBox.Show(
+                        "╔═══════════════════════════════════════════════════╗\n" +
+                        "║   ✅ ВСЕ ИЗМЕНЕНИЯ УСПЕШНО ОТМЕНЕНЫ!              ║\n" +
+                        "╚═══════════════════════════════════════════════════╝\n\n" +
+                        "🔄 Система восстановлена в исходное состояние\n\n" +
+                        "📋 Что было сделано:\n" +
+                        "   • Отменены все примененные твики\n" +
+                        "   • Восстановлены службы Windows\n" +
+                        "   • Возвращены настройки реестра\n\n" +
+                        "⚠️ ВАЖНО:\n" +
+                        "   Некоторые изменения вступят в силу после\n" +
+                        "   перезагрузки системы.\n\n" +
+                        "💡 Рекомендуется перезагрузить компьютер сейчас.",
+                        "Отмена изменений завершена",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                        
+                    // Снимаем все галочки с чекбоксов
+                    RefreshAllCheckboxes();
+                }
+                catch (Exception ex)
+                {
+                    StatusText.Text = "❌ Ошибка при отмене изменений";
+                    MessageBox.Show(
+                        "╔═══════════════════════════════════════════════════╗\n" +
+                        "║   ❌ ОШИБКА ПРИ ОТМЕНЕ ИЗМЕНЕНИЙ                  ║\n" +
+                        "╚═══════════════════════════════════════════════════╝\n\n" +
+                        $"Описание ошибки:\n{ex.Message}\n\n" +
+                        "💡 Попробуйте:\n" +
+                        "   • Запустить программу от имени администратора\n" +
+                        "   • Проверить логи в папке AppData\\WindowsTweaks\\Logs\n" +
+                        "   • Создать точку восстановления и откатить вручную",
+                        "Ошибка",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+        }
+
+        // Метод для обновления всех чекбоксов на основе примененных твиков
+        private void RefreshAllCheckboxes()
+        {
+            try
+            {
+                // Просто перезагружаем текущую категорию
+                // Это создаст все элементы заново с правильными индикаторами
+                if (NavigationList.SelectedIndex >= 0 && contentLoaders.ContainsKey(NavigationList.SelectedIndex))
+                {
+                    contentLoaders[NavigationList.SelectedIndex]();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка обновления: {ex.Message}");
             }
         }
     }

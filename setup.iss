@@ -1,8 +1,8 @@
 [Setup]
 AppId={{B7E3F8A2-C941-4D5E-9B12-8FA6E2D1C3E7}}
 AppName=WindowsTweaks
-AppVersion=2.2
-AppVerName=WindowsTweaks Professional 2.2
+AppVersion=2.3
+AppVerName=WindowsTweaks Professional 2.3
 AppPublisher=Виталий Николаевич (vitalikkontr)
 AppPublisherURL=https://github.com/vitalikkontr/WindowsTweaks-Pro
 AppSupportURL=https://github.com/vitalikkontr/WindowsTweaks-Pro/issues
@@ -13,7 +13,7 @@ DefaultDirName={autopf}\WindowsTweaksProfessional
 DefaultGroupName=WindowsTweaks
 DisableProgramGroupPage=yes
 OutputDir=C:\Release\Setup
-OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.2
+OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.3
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -36,7 +36,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "autostart"; Description: "Запускать при старте Windows"; GroupDescription: "Дополнительные опции:"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\vital\source\repos\WindowsTweaks_Pro\bin\Release\net8.0-windows\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\vital\source\repos\WindowsTweaks_Pro\bin\Release\net8.0-windows8.0\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\WindowsTweaks"; Filename: "{app}\WindowsTweaks.exe"

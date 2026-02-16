@@ -182,6 +182,11 @@
                             Click="CreateRestorePoint_Click"
                             Background="#2D2D30"
                             Margin="5,0"/>
+                    <Button Content="↩️ Отменить изменения" 
+                            Style="{StaticResource ModernButton}"
+                            Click="RevertChanges_Click"
+                            Background="#F44336"
+                            Margin="5,0"/>
                     <Button Content="✅ Применить изменения" 
                             Style="{StaticResource ModernButton}"
                             Click="ApplyChanges_Click"
