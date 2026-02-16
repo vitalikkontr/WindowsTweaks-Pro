@@ -36,7 +36,7 @@ Windows 7/8.1/10/11
 ## 📥 Установка
 
 1. [Скачайте последнюю версию](https://github.com/vitalikkontr/WindowsTweaks-Pro/releases/latest)
-2. Запустите установщик WindowsTweaks-Professional-Setup-v2.2.exe
+2. Запустите установщик WindowsTweaks-Professional-Setup-v2.4.exe
 3. Следуйте инструкциям мастера установки
 
 
