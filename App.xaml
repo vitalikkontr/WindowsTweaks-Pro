@@ -19,6 +19,7 @@
             <!-- Текст -->
             <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
             <SolidColorBrush x:Key="SecondaryTextBrush" Color="#B0B0B0"/>
+            <SolidColorBrush x:Key="BlackTextBrush" Color="#000000"/>
 
             <!-- Границы / Ховер -->
             <SolidColorBrush x:Key="BorderBrush" Color="#3F3F46"/>
@@ -81,6 +82,10 @@
                                             Property="Background"
                                             Value="{StaticResource PrimaryHoverBrush}"/>
 
+                                    <!-- ЧЕРНЫЙ ТЕКСТ ПРИ НАВЕДЕНИИ -->
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource BlackTextBrush}"/>
+
                                 </Trigger>
 
 
@@ -91,6 +96,10 @@
                                     <Setter TargetName="border"
                                             Property="Background"
                                             Value="{StaticResource PrimaryPressedBrush}"/>
+
+                                    <!-- ЧЕРНЫЙ ТЕКСТ ПРИ НАЖАТИИ -->
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource BlackTextBrush}"/>
 
                                 </Trigger>
 
@@ -115,23 +124,92 @@
             </Style>
 
 
-            <!-- ===== CheckBox ===== -->
+            <!-- ===== НОВЫЙ СТИЛЬ CheckBox БЕЗ ЧЕРНЫХ КВАДРАТИКОВ ===== -->
 
-            <Style x:Key="ModernCheckBox"
-                   TargetType="CheckBox">
+            <Style x:Key="ModernCheckBox" TargetType="CheckBox">
+                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Margin" Value="0,3,0,3"/>
+                <Setter Property="Padding" Value="6,3"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <Border Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="{TemplateBinding Padding}"
+                                    CornerRadius="4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                <Setter Property="Foreground"
-                        Value="{StaticResource TextBrush}"/>
+                                    <!-- Кастомный чекбокс -->
+                                    <Border x:Name="CheckBoxBorder"
+                                            Grid.Column="0"
+                                            Width="20"
+                                            Height="20"
+                                            Background="#2D2D30"
+                                            BorderBrush="#4CAF50"
+                                            BorderThickness="2"
+                                            CornerRadius="4"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,10,0">
+                                        <Grid>
+                                            <!-- Галочка -->
+                                            <Path x:Name="CheckMark"
+                                                  Data="M 0,5 L 4,9 L 10,0"
+                                                  Stroke="#4CAF50"
+                                                  StrokeThickness="2.5"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"
+                                                  StrokeLineJoin="Round"
+                                                  Visibility="Collapsed"
+                                                  Margin="3"/>
+                                        </Grid>
+                                    </Border>
 
-                <Setter Property="FontSize"
-                        Value="14"/>
+                                    <!-- Текст -->
+                                    <ContentPresenter Grid.Column="1"
+                                                     VerticalAlignment="Center"
+                                                     HorizontalAlignment="Left"
+                                                     RecognizesAccessKey="True"/>
+                                </Grid>
+                            </Border>
 
-                <Setter Property="Cursor"
-                        Value="Hand"/>
+                            <ControlTemplate.Triggers>
+                                <!-- Отмечен -->
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                    <Setter TargetName="CheckBoxBorder" Property="Background" Value="#388E3C"/>
+                                </Trigger>
 
-                <Setter Property="Margin"
-                        Value="2"/>
+                                <!-- Наведение -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="#66BB6A"/>
+                                    <Setter TargetName="CheckBoxBorder" Property="Background" Value="#353535"/>
+                                </Trigger>
 
+                                <!-- Наведение + Отмечен -->
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsChecked" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CheckBoxBorder" Property="Background" Value="#43A047"/>
+                                </MultiTrigger>
+
+                                <!-- Отключен -->
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
 
 

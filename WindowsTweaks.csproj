@@ -9,7 +9,11 @@
 
   <AssemblyName>WindowsTweaks</AssemblyName>
   <RootNamespace>WindowsTweaks</RootNamespace>
+<<<<<<< HEAD
   <Version>2.3</Version>
+=======
+  <Version>2.5</Version>
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
   <Authors>Виталий Николаевич (vitalikkontr)</Authors>
   <Company>WindowsTweaks Pro Edition</Company>
   <Product>WindowsTweaks Pro - Системные твики Windows</Product>
@@ -19,6 +23,11 @@
   <ApplicationIcon>app.ico</ApplicationIcon>
   <PackageProjectUrl>https://github.com/vitalikkontr/WindowsTweaks-Pro</PackageProjectUrl>
   <PackageIcon>app_icon.png</PackageIcon>
+<<<<<<< HEAD
+=======
+  <AssemblyVersion>2.5</AssemblyVersion>
+  <FileVersion>2.5</FileVersion>
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
 </PropertyGroup>
 
 

@@ -2,7 +2,11 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 
 	<assemblyIdentity
+<<<<<<< HEAD
 	  version="2.4.0.0"
+=======
+	  version="2.5.0.0"
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
 	  name="WindowsTweaksPro.app" />
 
 	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">

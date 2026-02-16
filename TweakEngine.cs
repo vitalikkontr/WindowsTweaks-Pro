@@ -10,7 +10,11 @@ namespace WindowsTweaks
 {
     /// <summary>
     /// Движок для применения системных твиков Windows
+<<<<<<< HEAD
     /// Версия 3.0 - Добавлена поддержка отмены твиков
+=======
+    /// Версия 2.5 - Исправлена темная тема и добавлены новые полезные твики
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
     /// </summary>
     public class TweakEngine
     {
@@ -52,6 +56,19 @@ namespace WindowsTweaks
             return appliedTweaks.Contains(tweakKey);
         }
 
+<<<<<<< HEAD
+=======
+        public bool IsTweakEnabled(string tweakKey)
+        {
+            return enabledTweaks.Contains(tweakKey);
+        }
+
+        public List<string> GetAppliedTweaks()
+        {
+            return new List<string>(appliedTweaks);
+        }
+
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
         public async Task ApplyAllTweaksAsync()
         {
             failedTweaks.Clear();
@@ -406,6 +423,7 @@ namespace WindowsTweaks
                     "Отключение Windows Defender",
                     () => {
                         SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware", 1, RegistryValueKind.DWord);
+<<<<<<< HEAD
                         ExecuteCommand("sc stop WinDefend");
                         ExecuteCommand("sc config WinDefend start=disabled");
                     },
@@ -413,7 +431,39 @@ namespace WindowsTweaks
                         DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware");
                         ExecuteCommand("sc config WinDefend start=auto");
                         ExecuteCommand("sc start WinDefend");
+=======
+                        ExecuteCommand("sc config WinDefend start=disabled");
+                    },
+                    () => {
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware", 0, RegistryValueKind.DWord);
+                        ExecuteCommand("sc config WinDefend start=auto");
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     }
+                ),
+
+                // НОВЫЕ ТВИКИ ПРОИЗВОДИТЕЛЬНОСТИ
+                ["DisableStartupDelay"] = new TweakAction(
+                    "Отключить задержку запуска программ при старте",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec", 0, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec")
+                ),
+
+                ["DisableBackgroundApps"] = new TweakAction(
+                    "Отключить фоновые приложения",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications", "GlobalUserDisabled", 1, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications", "GlobalUserDisabled", 0, RegistryValueKind.DWord)
+                ),
+
+                ["DisableGameBar"] = new TweakAction(
+                    "Отключить Xbox Game Bar",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 1, RegistryValueKind.DWord)
+                ),
+
+                ["DisableTransparency"] = new TweakAction(
+                    "Отключить прозрачность интерфейса",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 0, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 1, RegistryValueKind.DWord)
                 ),
 
                 // ═══════════════════════════════════════════════
@@ -428,7 +478,11 @@ namespace WindowsTweaks
                         ExecuteCommand("sc config DiagTrack start=disabled");
                     },
                     () => {
+<<<<<<< HEAD
                         SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 1, RegistryValueKind.DWord);
+=======
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 3, RegistryValueKind.DWord);
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                         ExecuteCommand("sc config DiagTrack start=auto");
                         ExecuteCommand("sc start DiagTrack");
                     }
@@ -443,7 +497,11 @@ namespace WindowsTweaks
                 ["DisableCortana"] = new TweakAction(
                     "Отключение Cortana",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 0, RegistryValueKind.DWord),
+<<<<<<< HEAD
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana")
+=======
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 1, RegistryValueKind.DWord)
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 ["DisableLocationTracking"] = new TweakAction(
@@ -467,13 +525,45 @@ namespace WindowsTweaks
                 ["BlockDiagnosticData"] = new TweakAction(
                     "Блокировка сбора диагностических данных",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection", "AllowTelemetry", 0, RegistryValueKind.DWord),
+<<<<<<< HEAD
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection", "AllowTelemetry", 1, RegistryValueKind.DWord)
+=======
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection", "AllowTelemetry", 3, RegistryValueKind.DWord)
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 ["DisableCloudSync"] = new TweakAction(
                     "Отключение облачной синхронизации",
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SettingSync", "SyncPolicy", 5, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SettingSync", "SyncPolicy", 1, RegistryValueKind.DWord)
+<<<<<<< HEAD
+=======
+                ),
+
+                // НОВЫЕ ТВИКИ КОНФИДЕНЦИАЛЬНОСТИ
+                ["DisableActivityHistory"] = new TweakAction(
+                    "Отключить историю действий",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System", "PublishUserActivities", 0, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System", "PublishUserActivities")
+                ),
+
+                ["DisableWebSearch"] = new TweakAction(
+                    "Отключить веб-поиск в меню Пуск",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer", "DisableSearchBoxSuggestions", 1, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer", "DisableSearchBoxSuggestions")
+                ),
+
+                ["DisableAppSuggestions"] = new TweakAction(
+                    "Отключить предложения приложений",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", 0, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "PreInstalledAppsEnabled", 0, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", 1, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "PreInstalledAppsEnabled", 1, RegistryValueKind.DWord);
+                    }
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 // ═══════════════════════════════════════════════
@@ -483,11 +573,19 @@ namespace WindowsTweaks
                 ["DisableIPv6"] = new TweakAction(
                     "Отключение IPv6",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents", 0xFF, RegistryValueKind.DWord),
+<<<<<<< HEAD
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents")
                 ),
 
                 ["OptimizeTCPIP"] = new TweakAction(
                     "Оптимизация TCP/IP",
+=======
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents", 0, RegistryValueKind.DWord)
+                ),
+
+                ["OptimizeTCPIP"] = new TweakAction(
+                    "Оптимизация настроек TCP/IP",
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     () => {
                         ExecuteCommand("netsh int tcp set global autotuninglevel=normal");
                         ExecuteCommand("netsh int tcp set global chimney=enabled");
@@ -505,7 +603,11 @@ namespace WindowsTweaks
                 ["FlushDNSCache"] = new TweakAction(
                     "Очистка кэша DNS",
                     () => ExecuteCommand("ipconfig /flushdns"),
+<<<<<<< HEAD
                     () => { } // Нет отмены для очистки кэша
+=======
+                    () => { /* Нет действия для отмены */ }
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 ["ResetNetworkAdapters"] = new TweakAction(
@@ -514,6 +616,7 @@ namespace WindowsTweaks
                         ExecuteCommand("netsh winsock reset");
                         ExecuteCommand("netsh int ip reset");
                     },
+<<<<<<< HEAD
                     () => { } // Нет отмены для сброса адаптеров
                 ),
 
@@ -527,21 +630,78 @@ namespace WindowsTweaks
                     "Включение QoS (Quality of Service)",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit", 0, RegistryValueKind.DWord),
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit")
+=======
+                    () => { /* Нет действия для отмены */ }
+                ),
+
+                ["DisableMeteredConnection"] = new TweakAction(
+                    "Отключение лимитированного подключения",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\DefaultMediaCost", "Ethernet", 1, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\DefaultMediaCost", "Ethernet", 2, RegistryValueKind.DWord)
+                ),
+
+                ["OptimizeQoS"] = new TweakAction(
+                    "Оптимизация настроек QoS",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit", 0, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit")
+                ),
+
+                // НОВЫЕ ТВИКИ СЕТИ
+                ["DisableNetBIOS"] = new TweakAction(
+                    "Отключить NetBIOS через TCP/IP (безопасность)",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "NodeType", 2, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "NodeType", 1, RegistryValueKind.DWord)
+                ),
+
+                ["DisableLLMNR"] = new TweakAction(
+                    "Отключить LLMNR (безопасность)",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient", "EnableMulticast", 0, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient", "EnableMulticast")
+                ),
+
+                ["OptimizeMTU"] = new TweakAction(
+                    "Оптимизировать MTU для лучшей производительности",
+                    () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1500 store=persistent"),
+                    () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1500 store=persistent")
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 // ═══════════════════════════════════════════════
-                // ВНЕШНИЙ ВИД И ПЕРСОНАЛИЗАЦИЯ
+                // ВНЕШНИЙ ВИД (ИСПРАВЛЕНО!)
                 // ═══════════════════════════════════════════════
 
                 ["EnableDarkTheme"] = new TweakAction(
-                    "Включение темной темы оформления",
+                    "Включение темной темы Windows",
                     () => {
+                        // Темная тема для приложений
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 0, RegistryValueKind.DWord);
+                        // Темная тема для системы
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 0, RegistryValueKind.DWord);
+<<<<<<< HEAD
                     },
                     () => {
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1, RegistryValueKind.DWord);
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 1, RegistryValueKind.DWord);
+=======
+                        // Автоматический перезапуск Explorer для применения темы
+                        try 
+                        { 
+                            ExecuteCommand("taskkill /f /im explorer.exe & start explorer.exe"); 
+                        } 
+                        catch { /* Игнорируем ошибки перезапуска */ }
+                    },
+                    () => {
+                        // Светлая тема для приложений
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1, RegistryValueKind.DWord);
+                        // Светлая тема для системы
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 1, RegistryValueKind.DWord);
+                        // Автоматический перезапуск Explorer для применения темы
+                        try 
+                        { 
+                            ExecuteCommand("taskkill /f /im explorer.exe & start explorer.exe"); 
+                        } 
+                        catch { /* Игнорируем ошибки перезапуска */ }
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     }
                 ),
 
@@ -559,6 +719,7 @@ namespace WindowsTweaks
 
                 ["ClassicContextMenu"] = new TweakAction(
                     "Классическое контекстное меню (Windows 11)",
+<<<<<<< HEAD
                     () => {
                         using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"))
                         {
@@ -576,12 +737,24 @@ namespace WindowsTweaks
 
                 ["DisableTaskbarGrouping"] = new TweakAction(
                     "Отключение группировки кнопок на панели задач",
+=======
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32", "", "", RegistryValueKind.String),
+                    () => DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32", "")
+                ),
+
+                ["DisableTaskbarGrouping"] = new TweakAction(
+                    "Отключить группировку на панели задач",
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarGlomLevel", 2, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarGlomLevel", 0, RegistryValueKind.DWord)
                 ),
 
                 ["SmallTaskbarIcons"] = new TweakAction(
+<<<<<<< HEAD
                     "Использовать мелкие значки на панели задач",
+=======
+                    "Мелкие значки на панели задач",
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarSmallIcons", 1, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarSmallIcons", 0, RegistryValueKind.DWord)
                 ),
@@ -590,14 +763,42 @@ namespace WindowsTweaks
                     "Убрать виджеты с панели задач (Windows 11)",
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarDa", 0, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarDa", 1, RegistryValueKind.DWord)
+<<<<<<< HEAD
+=======
+                ),
+
+                // НОВЫЕ ТВИКИ ВНЕШНЕГО ВИДА
+                ["ShowFullPath"] = new TweakAction(
+                    "Показывать полный путь в заголовке Проводника",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState", "FullPath", 1, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState", "FullPath", 0, RegistryValueKind.DWord)
+                ),
+
+                ["DisableShakeToMinimize"] = new TweakAction(
+                    "Отключить встряхивание окна для сворачивания",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "DisallowShaking", 1, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "DisallowShaking", 0, RegistryValueKind.DWord)
+                ),
+
+                ["EnableSecondsInClock"] = new TweakAction(
+                    "Показывать секунды в системных часах",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ShowSecondsInSystemClock", 1, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ShowSecondsInSystemClock", 0, RegistryValueKind.DWord)
+                ),
+
+                ["DisableLockScreen"] = new TweakAction(
+                    "Отключить экран блокировки",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen", 1, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen")
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 // ═══════════════════════════════════════════════
-                // УПРАВЛЕНИЕ СЛУЖБАМИ
+                // СЛУЖБЫ WINDOWS
                 // ═══════════════════════════════════════════════
 
                 ["DisableWindowsUpdate"] = new TweakAction(
-                    "Отключение службы Windows Update (осторожно!)",
+                    "Отключение Windows Update (осторожно!)",
                     () => {
                         ExecuteCommand("sc stop wuauserv");
                         ExecuteCommand("sc config wuauserv start=disabled");
@@ -667,6 +868,46 @@ namespace WindowsTweaks
                         ExecuteCommand("sc config DiagTrack start=auto");
                         ExecuteCommand("sc start DiagTrack");
                         ExecuteCommand("sc config diagnosticshub.standardcollector.service start=demand");
+<<<<<<< HEAD
+=======
+                    }
+                ),
+
+                // НОВЫЕ ТВИКИ СЛУЖБ
+                ["DisableRemoteRegistry"] = new TweakAction(
+                    "Отключить службу удаленного реестра",
+                    () => {
+                        ExecuteCommand("sc stop RemoteRegistry");
+                        ExecuteCommand("sc config RemoteRegistry start=disabled");
+                    },
+                    () => {
+                        ExecuteCommand("sc config RemoteRegistry start=demand");
+                    }
+                ),
+
+                ["DisableHomeGroup"] = new TweakAction(
+                    "Отключить службы домашней группы",
+                    () => {
+                        ExecuteCommand("sc stop HomeGroupListener");
+                        ExecuteCommand("sc config HomeGroupListener start=disabled");
+                        ExecuteCommand("sc stop HomeGroupProvider");
+                        ExecuteCommand("sc config HomeGroupProvider start=disabled");
+                    },
+                    () => {
+                        ExecuteCommand("sc config HomeGroupListener start=demand");
+                        ExecuteCommand("sc config HomeGroupProvider start=demand");
+                    }
+                ),
+
+                ["DisableErrorReporting"] = new TweakAction(
+                    "Отключить службу отчетов об ошибках Windows",
+                    () => {
+                        ExecuteCommand("sc stop WerSvc");
+                        ExecuteCommand("sc config WerSvc start=disabled");
+                    },
+                    () => {
+                        ExecuteCommand("sc config WerSvc start=demand");
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     }
                 ),
             };

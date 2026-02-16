@@ -60,6 +60,10 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить дефрагментацию по расписанию", "DisableScheduledDefrag");
             AddTweakCheckbox("Увеличить кэш DNS", "IncreaseDNSCache");
             AddTweakCheckbox("Отключить Windows Defender (требует осторожности!)", "DisableDefender");
+            AddTweakCheckbox("Отключить задержку запуска программ при старте", "DisableStartupDelay");
+            AddTweakCheckbox("Отключить фоновые приложения", "DisableBackgroundApps");
+            AddTweakCheckbox("Отключить Xbox Game Bar", "DisableGameBar");
+            AddTweakCheckbox("Отключить прозрачность интерфейса", "DisableTransparency");
 
             StatusText.Text = "Производительность: готов к настройке";
         }
@@ -81,6 +85,9 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить рекламный ID", "DisableAdvertisingID");
             AddTweakCheckbox("Блокировать сбор диагностических данных", "BlockDiagnosticData");
             AddTweakCheckbox("Отключить облачную синхронизацию", "DisableCloudSync");
+            AddTweakCheckbox("Отключить историю действий", "DisableActivityHistory");
+            AddTweakCheckbox("Отключить веб-поиск в меню Пуск", "DisableWebSearch");
+            AddTweakCheckbox("Отключить предложения приложений", "DisableAppSuggestions");
 
             StatusText.Text = "Конфиденциальность: готов к настройке";
         }
@@ -100,6 +107,9 @@ namespace WindowsTweaks
             AddTweakCheckbox("Сбросить сетевые адаптеры", "ResetNetworkAdapters");
             AddTweakCheckbox("Отключить лимитированное подключение", "DisableMeteredConnection");
             AddTweakCheckbox("Оптимизировать настройки QoS", "OptimizeQoS");
+            AddTweakCheckbox("Отключить NetBIOS через TCP/IP (безопасность)", "DisableNetBIOS");
+            AddTweakCheckbox("Отключить LLMNR (безопасность)", "DisableLLMNR");
+            AddTweakCheckbox("Оптимизировать MTU для лучшей производительности", "OptimizeMTU");
 
             StatusText.Text = "Сеть: готов к настройке";
         }
@@ -120,6 +130,10 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить группировку на панели задач", "DisableTaskbarGrouping");
             AddTweakCheckbox("Мелкие значки на панели задач", "SmallTaskbarIcons");
             AddTweakCheckbox("Убрать виджеты с панели задач (Win11)", "RemoveTaskbarWidgets");
+            AddTweakCheckbox("Показывать полный путь в заголовке Проводника", "ShowFullPath");
+            AddTweakCheckbox("Отключить встряхивание окна для сворачивания", "DisableShakeToMinimize");
+            AddTweakCheckbox("Показывать секунды в системных часах", "EnableSecondsInClock");
+            AddTweakCheckbox("Отключить экран блокировки", "DisableLockScreen");
 
             StatusText.Text = "Внешний вид: готов к настройке";
         }
@@ -149,6 +163,9 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить факс", "DisableFax");
             AddTweakCheckbox("Отключить Bluetooth", "DisableBluetooth");
             AddTweakCheckbox("Отключить диагностику", "DisableDiagnostic");
+            AddTweakCheckbox("Отключить службу удаленного реестра", "DisableRemoteRegistry");
+            AddTweakCheckbox("Отключить службы домашней группы", "DisableHomeGroup");
+            AddTweakCheckbox("Отключить службу отчетов об ошибках Windows", "DisableErrorReporting");
 
             StatusText.Text = "Службы: готов к настройке";
         }
@@ -173,9 +190,27 @@ namespace WindowsTweaks
             ContentPanel.Children.Add(description);
 
             // ═══════════════════════════════════════════════════════════
+            // Общий стиль для кнопок с эффектом наведения
+            // ═══════════════════════════════════════════════════════════
+            var hoverButtonStyle = new Style(typeof(Button));
+            hoverButtonStyle.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.White));
+            hoverButtonStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            hoverButtonStyle.Setters.Add(new Setter(Button.CursorProperty, System.Windows.Input.Cursors.Hand));
+            hoverButtonStyle.Setters.Add(new Setter(Button.FontSizeProperty, 13.0));
+            hoverButtonStyle.Setters.Add(new Setter(Button.FontWeightProperty, FontWeights.SemiBold));
+
+            var hoverTrigger = new Trigger
+            {
+                Property = Button.IsMouseOverProperty,
+                Value = true
+            };
+            hoverTrigger.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.Black));
+            hoverButtonStyle.Triggers.Add(hoverTrigger);
+
+            // ═══════════════════════════════════════════════════════════
             // СЕКЦИЯ 1: КОНТЕКСТНОЕ МЕНЮ "ЭТОТ КОМПЬЮТЕР"
             // ═══════════════════════════════════════════════════════════
-            
+
             var menuTitle = new TextBlock
             {
                 Text = "📋 УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"ЭТОТ КОМПЬЮТЕР\" (ПКМ)",
@@ -199,54 +234,39 @@ namespace WindowsTweaks
             };
             ContentPanel.Children.Add(menuDescription);
 
-            // Показываем статус установки для "Этот компьютер"
-            var statusPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-
+            // Статус установки
+            var statusPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
             var statusIcon = new TextBlock
             {
                 Text = ComputerContextMenu.AreToolsInstalled() ? "✅" : "❌",
                 FontSize = 16,
                 Margin = new Thickness(0, 0, 10, 0)
             };
-
             var statusText = new TextBlock
             {
                 Text = ComputerContextMenu.AreToolsInstalled()
                     ? "Статус: Системные инструменты установлены"
                     : "Статус: Системные инструменты не установлены",
                 FontSize = 13,
+                FontWeight = FontWeights.Bold,
                 Foreground = ComputerContextMenu.AreToolsInstalled()
                     ? new SolidColorBrush(Color.FromRgb(76, 175, 80))
-                    : new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-                FontWeight = FontWeights.Bold
+                    : new SolidColorBrush(Color.FromRgb(244, 67, 54))
             };
-
             statusPanel.Children.Add(statusIcon);
             statusPanel.Children.Add(statusText);
             ContentPanel.Children.Add(statusPanel);
 
-            // Панель кнопок для контекстного меню "Этот компьютер"
-            var menuButtonsPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            // Кнопки
+            var menuButtonsPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
 
             var addMenuButton = new Button
             {
                 Content = "➕ Добавить системные инструменты",
                 Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 15, 0),
                 Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Foreground = Brushes.White,
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Cursor = System.Windows.Input.Cursors.Hand
+                Style = hoverButtonStyle
             };
             addMenuButton.Click += AddContextMenuItems_Click;
 
@@ -255,12 +275,8 @@ namespace WindowsTweaks
                 Content = "🗑️ Удалить системные инструменты",
                 Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 15, 0),
                 Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-                Foreground = Brushes.White,
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Cursor = System.Windows.Input.Cursors.Hand
+                Style = hoverButtonStyle
             };
             removeMenuButton.Click += RemoveContextMenuItems_Click;
 
@@ -270,10 +286,7 @@ namespace WindowsTweaks
                 Width = 280,
                 Height = 40,
                 Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                Foreground = Brushes.White,
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Cursor = System.Windows.Input.Cursors.Hand
+                Style = hoverButtonStyle
             };
             diagnosticButton.Click += DiagnosticContextMenu_Click;
 
@@ -283,17 +296,17 @@ namespace WindowsTweaks
             ContentPanel.Children.Add(menuButtonsPanel);
 
             // Разделитель
-            var separator = new System.Windows.Controls.Separator
+            ContentPanel.Children.Add(new Separator
             {
                 Margin = new Thickness(0, 10, 0, 20),
-                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60))
-            };
-            ContentPanel.Children.Add(separator);
+                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
+                Height = 1
+            });
 
             // ═══════════════════════════════════════════════════════════
             // СЕКЦИЯ 2: КОНТЕКСТНОЕ МЕНЮ РАБОЧЕГО СТОЛА
             // ═══════════════════════════════════════════════════════════
-            
+
             var desktopMenuTitle = new TextBlock
             {
                 Text = "🖥️ УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"РАБОЧЕГО СТОЛА\" (ПКМ)",
@@ -322,28 +335,12 @@ namespace WindowsTweaks
             };
             ContentPanel.Children.Add(desktopMenuDescription);
 
-            // Статус установки для меню рабочего стола
-            var desktopStatusPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 15)
-            };
+            // Статус установки
+            var desktopStatusPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
+            var desktopStatusIcon = new TextBlock { FontSize = 16, Margin = new Thickness(0, 0, 10, 0) };
+            var desktopStatusText = new TextBlock { FontSize = 13, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center };
 
-            var desktopStatusIcon = new TextBlock
-            {
-                FontSize = 16,
-                Margin = new Thickness(0, 0, 10, 0)
-            };
-
-            var desktopStatusText = new TextBlock
-            {
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            bool desktopToolsInstalled = DesktopContextMenu.AreDesktopToolsInstalled();
-            if (desktopToolsInstalled)
+            if (DesktopContextMenu.AreDesktopToolsInstalled())
             {
                 desktopStatusIcon.Text = "✅";
                 desktopStatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
@@ -362,25 +359,16 @@ namespace WindowsTweaks
             desktopStatusPanel.Children.Add(desktopStatusText);
             ContentPanel.Children.Add(desktopStatusPanel);
 
-            // Кнопки управления для рабочего стола
-            var desktopButtonsPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 10, 0, 20)
-            };
+            // Кнопки рабочего стола
+            var desktopButtonsPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 20) };
 
             var addDesktopButton = new Button
             {
                 Content = "➕ Добавить в меню Рабочего Стола",
                 Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 15, 0),
                 Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                FontSize = 13,
-                FontWeight = FontWeights.SemiBold
+                Style = hoverButtonStyle
             };
             addDesktopButton.Click += AddDesktopContextMenuItems_Click;
 
@@ -389,13 +377,8 @@ namespace WindowsTweaks
                 Content = "🗑️ Удалить из меню Рабочего Стола",
                 Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 15, 0),
                 Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                FontSize = 13,
-                FontWeight = FontWeights.SemiBold
+                Style = hoverButtonStyle
             };
             removeDesktopButton.Click += RemoveDesktopContextMenuItems_Click;
 
@@ -404,13 +387,8 @@ namespace WindowsTweaks
                 Content = "🔍 Диагностика меню Рабочего Стола",
                 Width = 280,
                 Height = 40,
-                Margin = new Thickness(0, 0, 0, 0),
                 Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                FontSize = 13,
-                FontWeight = FontWeights.SemiBold
+                Style = hoverButtonStyle
             };
             diagnosticDesktopButton.Click += DiagnosticDesktopContextMenu_Click;
 
@@ -418,6 +396,7 @@ namespace WindowsTweaks
             desktopButtonsPanel.Children.Add(removeDesktopButton);
             desktopButtonsPanel.Children.Add(diagnosticDesktopButton);
             ContentPanel.Children.Add(desktopButtonsPanel);
+
 
             // Разделитель
             var separator2 = new System.Windows.Controls.Separator
@@ -498,7 +477,11 @@ namespace WindowsTweaks
             var stackPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
+<<<<<<< HEAD
                 Margin = new Thickness(0, 8, 0, 8)
+=======
+                Margin = new Thickness(0, 2, 0, 2) // Уменьшенные отступы: было 8, стало 2
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
             };
             
             // Индикатор статуса (зеленая галочка если применено)
@@ -511,6 +494,7 @@ namespace WindowsTweaks
                 ToolTip = isApplied ? "Твик применен" : "Твик не применен"
             };
             
+<<<<<<< HEAD
             // Чекбокс
             var checkbox = new CheckBox
             {
@@ -620,6 +604,32 @@ namespace WindowsTweaks
             isUpdating = true;
             checkbox.IsChecked = isApplied;
             isUpdating = false;
+=======
+            // Чекбокс с применением стиля ModernCheckBox
+            var checkbox = new CheckBox
+            {
+                Content = label,
+                Tag = tweakKey,
+                VerticalAlignment = VerticalAlignment.Center,
+                Style = (Style)Application.Current.Resources["ModernCheckBox"]
+            };
+
+            // ✨ ТОЛЬКО ВЫБОР - применение через кнопку "Применить изменения"
+            checkbox.Checked += (s, e) =>
+            {
+                tweakEngine.EnableTweak(tweakKey);
+                StatusText.Text = $"Выбран твик: {label} (нажмите 'Применить изменения')";
+            };
+
+            checkbox.Unchecked += (s, e) =>
+            {
+                tweakEngine.DisableTweak(tweakKey);
+                StatusText.Text = $"Отменен выбор: {label}";
+            };
+
+            // Устанавливаем галочку если твик уже применен
+            checkbox.IsChecked = isApplied;
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
 
             // Собираем элементы
             stackPanel.Children.Add(statusIcon);
@@ -637,22 +647,24 @@ namespace WindowsTweaks
                 HorizontalContentAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(0, 5, 0, 5),
                 FontSize = 14,
-                Background = new SolidColorBrush(Color.FromRgb(66, 165, 245)), // Светло-голубой (немного темнее чем на скрине)
+                Background = new SolidColorBrush(Color.FromRgb(66, 165, 245)), // Светло-голубой
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 Padding = new Thickness(15, 8, 15, 8)
             };
 
-            // Лёгкая подсветка при наведении (чуть светлее)
+            // При наведении: фон светлее + ТЕКСТ ЧЕРНЫЙ = отлично видно!
             button.MouseEnter += (s, e) =>
             {
-                button.Background = new SolidColorBrush(Color.FromRgb(100, 181, 246)); // Немного светлее
+                button.Background = new SolidColorBrush(Color.FromRgb(100, 181, 246)); // Светлее
+                button.Foreground = Brushes.Black; // ТЕКСТ ЧЕРНЫЙ!
             };
 
             button.MouseLeave += (s, e) =>
             {
                 button.Background = new SolidColorBrush(Color.FromRgb(66, 165, 245)); // Возврат к базовому
+                button.Foreground = Brushes.White; // ТЕКСТ БЕЛЫЙ
             };
 
             button.Click += (s, e) => action?.Invoke();
@@ -679,8 +691,15 @@ namespace WindowsTweaks
                     StatusText.Text = "Изменения успешно применены!";
 
                     MessageBox.Show(
-                        "Изменения успешно применены!\n\n" +
-                        "Некоторые изменения могут потребовать перезагрузки системы.",
+                        "╔═══════════════════════════════════════════════════╗\n" +
+                        "║   ✅ ИЗМЕНЕНИЯ УСПЕШНО ПРИМЕНЕНЫ!                 ║\n" +
+                        "╚═══════════════════════════════════════════════════╝\n\n" +
+                        "📋 Важные замечания:\n\n" +
+                        "• Некоторые изменения вступят в силу после\n" +
+                        "  перезагрузки системы\n\n" +
+                        "• Темная тема применяется автоматически\n" +
+                        "  (Explorer перезапускается автоматически)\n\n" +
+                        "• Проверьте логи в %AppData%\\WindowsTweaks\\Logs",
                         "Успешно",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
@@ -736,12 +755,22 @@ namespace WindowsTweaks
                 "1️⃣ Выберите категорию настроек в левом меню\n" +
                 "   (Производительность, Конфиденциальность и т.д.)\n\n" +
                 "2️⃣ Отметьте нужные твики галочками\n\n" +
-                "3️⃣ Нажмите кнопку 'Применить изменения'\n\n" +
+                "3️⃣ Нажмите кнопку '✅ Применить изменения' внизу\n" +
+                "   (твики НЕ применяются автоматически при выборе!)\n\n" +
                 "4️⃣ Дождитесь завершения операции\n\n" +
                 "⚠️ ВАЖНЫЕ РЕКОМЕНДАЦИИ:\n\n" +
                 "• Создавайте точку восстановления системы\n" +
                 "  перед применением изменений!\n\n" +
                 "• Некоторые изменения требуют перезагрузки\n\n" +
+                "• Темная тема применяется автоматически\n" +
+                "  (Explorer перезапускается сам)\n\n" +
+                "↩️ ОТМЕНА ТВИКОВ:\n\n" +
+                "Чтобы отменить твики:\n" +
+                "1. СНИМИТЕ галочки с тех твиков, которые\n" +
+                "   хотите отменить\n" +
+                "2. Нажмите '↩️ Отменить изменения'\n" +
+                "3. Отменятся только снятые твики!\n" +
+                "   (твики с галочками останутся)\n\n" +
                 "🎯 ДОБАВЛЕНИЕ ПУНКТОВ В МЕНЮ:\n\n" +
                 "Раздел 'Инструменты администрирования' позволяет\n" +
                 "добавить системные утилиты в контекстные меню:\n" +
@@ -757,21 +786,31 @@ namespace WindowsTweaks
         {
             MessageBox.Show(
                 "╔═════════════════════════════════════════════╗\n" +
+<<<<<<< HEAD
                 "║   WindowsTweaks Pro Edition v2.4            ║\n" +
+=======
+                "║   WindowsTweaks Pro Edition v2.5            ║\n" +
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 "╚═════════════════════════════════════════════╝\n\n" +
                 "🎯 Профессиональный инструмент для оптимизации\n" +
                 "   и настройки операционной системы Windows\n\n" +
                 "✨ ОСНОВНЫЕ ВОЗМОЖНОСТИ:\n" +
+                "   • 35 твиков для оптимизации системы\n" +
                 "   • Оптимизация производительности\n" +
                 "   • Настройка конфиденциальности\n" +
                 "   • Управление службами Windows\n" +
+                "   • Красивый дизайн с кастомными чекбоксами\n" +
                 "   • Контекстное меню \"Этот компьютер\"\n" +
                 "     (8 инструментов + Безопасный режим)\n" +
                 "   • Контекстное меню рабочего стола\n" +
                 "     (11 инструментов + 2 подменю)\n\n" +
                 "👤 Разработчик:\n" +
                 "   Виталий Николаевич (vitalikkontr)\n\n" +
+<<<<<<< HEAD
                 "📅 Дата сборки: 16.02.2026\n\n" +
+=======
+                "📅 Версия: 2.5 FINAL (17.02.2026)\n\n" +
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 "© 2026 WindowsTweaks Pro Edition\n" +
                 "Все права защищены.",
                 "О программе WindowsTweaks Pro",
@@ -1269,11 +1308,16 @@ shutdown /r /t 3
         }
 
         // ═══════════════════════════════════════════════════════════════════════
+<<<<<<< HEAD
         // НОВАЯ ФУНКЦИЯ: ОТМЕНА ПРИМЕНЕННЫХ ТВИКОВ (v3.0)
+=======
+        // НОВАЯ ФУНКЦИЯ: ОТМЕНА ПРИМЕНЕННЫХ ТВИКОВ
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
         // ═══════════════════════════════════════════════════════════════════════
 
         private async void RevertChanges_Click(object sender, RoutedEventArgs e)
         {
+<<<<<<< HEAD
             var result = MessageBox.Show(
                 "⚠️ ВЫ УВЕРЕНЫ, ЧТО ХОТИТЕ ОТМЕНИТЬ ВСЕ ПРИМЕНЕННЫЕ ИЗМЕНЕНИЯ?\n\n" +
                 "Это действие восстановит систему в исходное состояние:\n\n" +
@@ -1314,20 +1358,99 @@ shutdown /r /t 3
                         MessageBoxImage.Information);
                         
                     // Снимаем все галочки с чекбоксов
+=======
+            // Получаем список твиков, которые пользователь СНЯЛ (хочет отменить)
+            var tweaksToRevert = new List<string>();
+            
+            // Проходим по всем примененным твикам
+            foreach (var appliedTweak in tweakEngine.GetAppliedTweaks())
+            {
+                // Если твик НЕ выбран сейчас (enabledTweaks не содержит его)
+                // значит пользователь снял галочку и хочет его отменить
+                if (!tweakEngine.IsTweakEnabled(appliedTweak))
+                {
+                    tweaksToRevert.Add(appliedTweak);
+                }
+            }
+            
+            // Если нет твиков для отмены
+            if (tweaksToRevert.Count == 0)
+            {
+                MessageBox.Show(
+                    "Нет твиков для отмены.\n\n" +
+                    "Снимите галочки с тех твиков, которые хотите отменить,\n" +
+                    "затем нажмите эту кнопку.",
+                    "Информация",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+            
+            var result = MessageBox.Show(
+                $"⚠️ ВЫ УВЕРЕНЫ, ЧТО ХОТИТЕ ОТМЕНИТЬ ВЫБРАННЫЕ ТВИКИ?\n\n" +
+                $"Будет отменено твиков: {tweaksToRevert.Count}\n\n" +
+                "Это действие отменит только те твики, с которых\n" +
+                "вы СНЯЛИ галочки.\n\n" +
+                "Твики с установленными галочками останутся активными.\n\n" +
+                "⚠️ ВНИМАНИЕ: Некоторые изменения могут потребовать перезагрузки!",
+                "Подтверждение отмены твиков",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                StatusText.Text = $"⏳ Отмена {tweaksToRevert.Count} твиков...";
+
+                try
+                {
+                    // Отменяем только выбранные твики
+                    await tweakEngine.RevertSelectedTweaksAsync(tweaksToRevert);
+                    
+                    StatusText.Text = $"✅ Успешно отменено {tweaksToRevert.Count} твиков!";
+
+                    MessageBox.Show(
+                        "╔═══════════════════════════════════════════════════╗\n" +
+                        "║   ✅ ВЫБРАННЫЕ ТВИКИ УСПЕШНО ОТМЕНЕНЫ!            ║\n" +
+                        "╚═══════════════════════════════════════════════════╝\n\n" +
+                        $"🔄 Отменено твиков: {tweaksToRevert.Count}\n\n" +
+                        "📋 Что было сделано:\n" +
+                        "   • Отменены только снятые вами твики\n" +
+                        "   • Твики с галочками остались активными\n" +
+                        "   • Восстановлены настройки реестра\n\n" +
+                        "⚠️ ВАЖНО:\n" +
+                        "   Некоторые изменения вступят в силу после\n" +
+                        "   перезагрузки системы.",
+                        "Отмена твиков завершена",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                        
+                    // Обновляем интерфейс
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     RefreshAllCheckboxes();
                 }
                 catch (Exception ex)
                 {
+<<<<<<< HEAD
                     StatusText.Text = "❌ Ошибка при отмене изменений";
                     MessageBox.Show(
                         "╔═══════════════════════════════════════════════════╗\n" +
                         "║   ❌ ОШИБКА ПРИ ОТМЕНЕ ИЗМЕНЕНИЙ                  ║\n" +
+=======
+                    StatusText.Text = "❌ Ошибка при отмене твиков";
+                    MessageBox.Show(
+                        "╔═══════════════════════════════════════════════════╗\n" +
+                        "║   ❌ ОШИБКА ПРИ ОТМЕНЕ ТВИКОВ                     ║\n" +
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                         "╚═══════════════════════════════════════════════════╝\n\n" +
                         $"Описание ошибки:\n{ex.Message}\n\n" +
                         "💡 Попробуйте:\n" +
                         "   • Запустить программу от имени администратора\n" +
+<<<<<<< HEAD
                         "   • Проверить логи в папке AppData\\WindowsTweaks\\Logs\n" +
                         "   • Создать точку восстановления и откатить вручную",
+=======
+                        "   • Проверить логи в папке AppData\\WindowsTweaks\\Logs",
+>>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                         "Ошибка",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);

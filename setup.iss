@@ -1,8 +1,13 @@
 [Setup]
 AppId={{B7E3F8A2-C941-4D5E-9B12-8FA6E2D1C3E7}}
 AppName=WindowsTweaks
+<<<<<<< HEAD
 AppVersion=2.3
 AppVerName=WindowsTweaks Professional 2.3
+=======
+AppVersion=2.5
+AppVerName=WindowsTweaks Professional 2.5
+>>>>>>> 72e994d (РћР±РЅРѕРІРёР» РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ РґРѕР±Р°РІРёР» 17 С‚РІРёРєРѕРІ, РІРµСЂСЃРёСЏ 2.5)
 AppPublisher=Виталий Николаевич (vitalikkontr)
 AppPublisherURL=https://github.com/vitalikkontr/WindowsTweaks-Pro
 AppSupportURL=https://github.com/vitalikkontr/WindowsTweaks-Pro/issues
@@ -13,7 +18,11 @@ DefaultDirName={autopf}\WindowsTweaksProfessional
 DefaultGroupName=WindowsTweaks
 DisableProgramGroupPage=yes
 OutputDir=C:\Release\Setup
+<<<<<<< HEAD
 OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.3
+=======
+OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.5
+>>>>>>> 72e994d (РћР±РЅРѕРІРёР» РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ РґРѕР±Р°РІРёР» 17 С‚РІРёРєРѕРІ, РІРµСЂСЃРёСЏ 2.5)
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -49,7 +58,7 @@ Root: HKCU; Subkey: "Software\WindowsTweaksProfessional\Settings"; Flags: uninsd
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "WindowsTweaks"; ValueData: "{app}\WindowsTweaks.exe /autostart"; Flags: uninsdeletevalue; Tasks: autostart
 
 [Run]
-Filename: "{app}\WindowsTweaks.exe"; Description: "{cm:LaunchProgram,WindowsTweaks}"; Flags: nowait postinstall skipifsilent
+; Не запускаем здесь exe, запуск будет через ShellExec с правами администратора
 
 [UninstallDelete]
 Type: files; Name: "{app}\config.ini"
@@ -93,8 +102,6 @@ end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
-  if CurStep = ssPostInstall then
-  begin
-    // Здесь можно добавить дополнительные действия после установки
-  end;
+  // Не делаем ничего, автозапуск отключён
 end;
+
