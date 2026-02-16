@@ -1,4 +1,5 @@
-<div align="center"><img width="1238" height="909" alt="2026-02-08_033633" src="https://github.com/user-attachments/assets/e2252abe-0c1d-44df-b9a2-12fd9d6bf884" />
+<div align="center"><img width="611" height="600" alt="WindowsTweaks" src="https://github.com/user-attachments/assets/674d775b-77a8-42aa-94f4-b64255f783d9" />
+
 
 # WindowsTweaks Профессиональная ⚡
 
