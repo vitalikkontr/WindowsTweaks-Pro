@@ -34,6 +34,12 @@ namespace WindowsTweaks
             );
 
             LoadAppliedTweaksState();
+
+            // Синхронизируем enabledTweaks с уже применёнными твиками.
+            // Без этого при старте enabledTweaks пуст, и кнопка "Отменить"
+            // считает ВСЕ применённые твики "отключёнными" — и предлагает их отменить.
+            foreach (var tweak in appliedTweaks)
+                enabledTweaks.Add(tweak);
         }
 
         public void EnableTweak(string tweakKey)
