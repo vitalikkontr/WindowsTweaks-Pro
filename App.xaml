@@ -19,7 +19,6 @@
             <!-- Текст -->
             <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
             <SolidColorBrush x:Key="SecondaryTextBrush" Color="#B0B0B0"/>
-            <SolidColorBrush x:Key="BlackTextBrush" Color="#000000"/>
 
             <!-- Границы / Ховер -->
             <SolidColorBrush x:Key="BorderBrush" Color="#3F3F46"/>
@@ -82,10 +81,6 @@
                                             Property="Background"
                                             Value="{StaticResource PrimaryHoverBrush}"/>
 
-                                    <!-- ЧЕРНЫЙ ТЕКСТ ПРИ НАВЕДЕНИИ -->
-                                    <Setter Property="Foreground"
-                                            Value="{StaticResource BlackTextBrush}"/>
-
                                 </Trigger>
 
 
@@ -96,10 +91,6 @@
                                     <Setter TargetName="border"
                                             Property="Background"
                                             Value="{StaticResource PrimaryPressedBrush}"/>
-
-                                    <!-- ЧЕРНЫЙ ТЕКСТ ПРИ НАЖАТИИ -->
-                                    <Setter Property="Foreground"
-                                            Value="{StaticResource BlackTextBrush}"/>
 
                                 </Trigger>
 

@@ -1,13 +1,8 @@
 [Setup]
 AppId={{B7E3F8A2-C941-4D5E-9B12-8FA6E2D1C3E7}}
 AppName=WindowsTweaks
-<<<<<<< HEAD
-AppVersion=2.3
-AppVerName=WindowsTweaks Professional 2.3
-=======
-AppVersion=2.5
-AppVerName=WindowsTweaks Professional 2.5
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+AppVersion=2.6
+AppVerName=WindowsTweaks Professional 2.6
 AppPublisher=������� ���������� (vitalikkontr)
 AppPublisherURL=https://github.com/vitalikkontr/WindowsTweaks-Pro
 AppSupportURL=https://github.com/vitalikkontr/WindowsTweaks-Pro/issues
@@ -18,11 +13,7 @@ DefaultDirName={autopf}\WindowsTweaksProfessional
 DefaultGroupName=WindowsTweaks
 DisableProgramGroupPage=yes
 OutputDir=C:\Release\Setup
-<<<<<<< HEAD
-OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.3
-=======
-OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.5
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+OutputBaseFilename=WindowsTweaks-Professional-Setup-v2.6
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

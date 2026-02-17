@@ -10,11 +10,7 @@ namespace WindowsTweaks
 {
     /// <summary>
     /// Движок для применения системных твиков Windows
-<<<<<<< HEAD
-    /// Версия 3.0 - Добавлена поддержка отмены твиков
-=======
-    /// Версия 2.5 - Исправлена темная тема и добавлены новые полезные твики
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+    /// Добавлена поддержка отмены твиков + 13 новых твиков
     /// </summary>
     public class TweakEngine
     {
@@ -31,7 +27,6 @@ namespace WindowsTweaks
             failedTweaks = new List<string>();
             tweakActions = InitializeTweakActions();
 
-            // Путь для хранения состояния примененных твиков
             statePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "WindowsTweaks",
@@ -56,8 +51,6 @@ namespace WindowsTweaks
             return appliedTweaks.Contains(tweakKey);
         }
 
-<<<<<<< HEAD
-=======
         public bool IsTweakEnabled(string tweakKey)
         {
             return enabledTweaks.Contains(tweakKey);
@@ -68,7 +61,6 @@ namespace WindowsTweaks
             return new List<string>(appliedTweaks);
         }
 
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
         public async Task ApplyAllTweaksAsync()
         {
             failedTweaks.Clear();
@@ -82,23 +74,17 @@ namespace WindowsTweaks
                         try
                         {
                             tweakActions[tweakKey].Apply();
-                            
                             if (!appliedTweaks.Contains(tweakKey))
-                            {
                                 appliedTweaks.Add(tweakKey);
-                            }
-                            
                             Debug.WriteLine($"✓ Успешно применен твик: {tweakKey}");
                         }
                         catch (UnauthorizedAccessException)
                         {
                             failedTweaks.Add($"{tweakKey} (требуются права администратора)");
-                            Debug.WriteLine($"✗ Недостаточно прав для твика: {tweakKey}");
                         }
                         catch (Exception ex)
                         {
                             failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                            Debug.WriteLine($"✗ Ошибка применения твика {tweakKey}: {ex.Message}");
                         }
                     }
                 }
@@ -108,13 +94,34 @@ namespace WindowsTweaks
             LogResults();
         }
 
+        public async Task ApplySelectedTweakAsync(string tweakKey)
+        {
+            await Task.Run(() =>
+            {
+                if (tweakActions.ContainsKey(tweakKey))
+                {
+                    try
+                    {
+                        tweakActions[tweakKey].Apply();
+                        if (!appliedTweaks.Contains(tweakKey))
+                            appliedTweaks.Add(tweakKey);
+                        SaveAppliedTweaksState();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"✗ Ошибка применения твика {tweakKey}: {ex.Message}");
+                        throw;
+                    }
+                }
+            });
+        }
+
         public async Task RevertAllTweaksAsync()
         {
             failedTweaks.Clear();
 
             await Task.Run(() =>
             {
-                // Отменяем все примененные твики
                 foreach (var tweakKey in appliedTweaks.ToList())
                 {
                     if (tweakActions.ContainsKey(tweakKey))
@@ -127,12 +134,10 @@ namespace WindowsTweaks
                         catch (UnauthorizedAccessException)
                         {
                             failedTweaks.Add($"{tweakKey} (требуются права администратора)");
-                            Debug.WriteLine($"✗ Недостаточно прав для отмены твика: {tweakKey}");
                         }
                         catch (Exception ex)
                         {
                             failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                            Debug.WriteLine($"✗ Ошибка отмены твика {tweakKey}: {ex.Message}");
                         }
                     }
                 }
@@ -159,13 +164,11 @@ namespace WindowsTweaks
                         {
                             tweakActions[tweakKey].Revert();
                             appliedTweaks.Remove(tweakKey);
-                            enabledTweaks.Remove(tweakKey);
                             Debug.WriteLine($"✓ Успешно отменен твик: {tweakKey}");
                         }
                         catch (Exception ex)
                         {
                             failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                            Debug.WriteLine($"✗ Ошибка отмены твика {tweakKey}: {ex.Message}");
                         }
                     }
                 }
@@ -175,35 +178,6 @@ namespace WindowsTweaks
             LogResults();
         }
 
-        // Применить ОДИН конкретный твик (мгновенное применение)
-        public async Task ApplySelectedTweakAsync(string tweakKey)
-        {
-            await Task.Run(() =>
-            {
-                if (tweakActions.ContainsKey(tweakKey))
-                {
-                    try
-                    {
-                        tweakActions[tweakKey].Apply();
-                        
-                        if (!appliedTweaks.Contains(tweakKey))
-                        {
-                            appliedTweaks.Add(tweakKey);
-                        }
-                        
-                        SaveAppliedTweaksState();
-                        Debug.WriteLine($"✓ Успешно применен твик: {tweakKey}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"✗ Ошибка применения твика {tweakKey}: {ex.Message}");
-                        throw; // Пробрасываем исключение для обработки в UI
-                    }
-                }
-            });
-        }
-
-        // Отменить ОДИН конкретный твик (мгновенная отмена)
         public async Task RevertSelectedTweakAsync(string tweakKey)
         {
             await Task.Run(() =>
@@ -214,14 +188,13 @@ namespace WindowsTweaks
                     {
                         tweakActions[tweakKey].Revert();
                         appliedTweaks.Remove(tweakKey);
-                        
                         SaveAppliedTweaksState();
                         Debug.WriteLine($"✓ Успешно отменен твик: {tweakKey}");
                     }
                     catch (Exception ex)
                     {
                         Debug.WriteLine($"✗ Ошибка отмены твика {tweakKey}: {ex.Message}");
-                        throw; // Пробрасываем исключение для обработки в UI
+                        throw;
                     }
                 }
             });
@@ -238,10 +211,7 @@ namespace WindowsTweaks
                     appliedTweaks.AddRange(lines.Where(l => !string.IsNullOrWhiteSpace(l)));
                 }
             }
-            catch
-            {
-                // Игнорируем ошибки загрузки состояния
-            }
+            catch { }
         }
 
         private void SaveAppliedTweaksState()
@@ -250,16 +220,10 @@ namespace WindowsTweaks
             {
                 string directory = Path.GetDirectoryName(statePath);
                 if (!Directory.Exists(directory))
-                {
                     Directory.CreateDirectory(directory);
-                }
-
                 File.WriteAllLines(statePath, appliedTweaks);
             }
-            catch
-            {
-                // Игнорируем ошибки сохранения состояния
-            }
+            catch { }
         }
 
         public string GetApplyResults()
@@ -276,9 +240,7 @@ namespace WindowsTweaks
                 foreach (var tweak in appliedTweaks)
                 {
                     if (tweakActions.ContainsKey(tweak))
-                    {
                         result.AppendLine($"   • {tweakActions[tweak].Description}");
-                    }
                 }
                 result.AppendLine();
             }
@@ -287,9 +249,7 @@ namespace WindowsTweaks
             {
                 result.AppendLine($"❌ Ошибки: {failedTweaks.Count}");
                 foreach (var tweak in failedTweaks)
-                {
                     result.AppendLine($"   • {tweak}");
-                }
                 result.AppendLine();
             }
 
@@ -303,22 +263,12 @@ namespace WindowsTweaks
             {
                 string logPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "WindowsTweaks",
-                    "Logs"
-                );
+                    "WindowsTweaks", "Logs");
                 Directory.CreateDirectory(logPath);
-
-                string logFile = Path.Combine(
-                    logPath,
-                    $"tweaks_{DateTime.Now:yyyyMMdd_HHmmss}.log"
-                );
-
+                string logFile = Path.Combine(logPath, $"tweaks_{DateTime.Now:yyyyMMdd_HHmmss}.log");
                 File.WriteAllText(logFile, GetApplyResults());
             }
-            catch
-            {
-                // Игнорируем ошибки логирования
-            }
+            catch { }
         }
 
         public void CreateRestorePoint(string description)
@@ -336,12 +286,10 @@ namespace WindowsTweaks
                 };
 
                 var process = Process.Start(psi);
-                process?.WaitForExit(60000); // Таймаут 60 секунд
+                process?.WaitForExit(60000);
 
                 if (process?.ExitCode != 0)
-                {
                     throw new Exception("Не удалось создать точку восстановления");
-                }
             }
             catch (Exception ex)
             {
@@ -423,7 +371,6 @@ namespace WindowsTweaks
                     "Отключение Windows Defender",
                     () => {
                         SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware", 1, RegistryValueKind.DWord);
-<<<<<<< HEAD
                         ExecuteCommand("sc stop WinDefend");
                         ExecuteCommand("sc config WinDefend start=disabled");
                     },
@@ -431,17 +378,9 @@ namespace WindowsTweaks
                         DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware");
                         ExecuteCommand("sc config WinDefend start=auto");
                         ExecuteCommand("sc start WinDefend");
-=======
-                        ExecuteCommand("sc config WinDefend start=disabled");
-                    },
-                    () => {
-                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware", 0, RegistryValueKind.DWord);
-                        ExecuteCommand("sc config WinDefend start=auto");
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     }
                 ),
 
-                // НОВЫЕ ТВИКИ ПРОИЗВОДИТЕЛЬНОСТИ
                 ["DisableStartupDelay"] = new TweakAction(
                     "Отключить задержку запуска программ при старте",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec", 0, RegistryValueKind.DWord),
@@ -466,6 +405,74 @@ namespace WindowsTweaks
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 1, RegistryValueKind.DWord)
                 ),
 
+                // НОВЫЕ ТВИКИ ПРОИЗВОДИТЕЛЬНОСТИ
+
+                ["DelayedServicesStart"] = new TweakAction(
+                    "Отложенный запуск служб для ускорения старта",
+                    () => {
+                        // Переводим ряд автоматических служб в режим отложенного запуска
+                        ExecuteCommand("sc config DiagTrack start=delayed-auto");
+                        ExecuteCommand("sc config wuauserv start=delayed-auto");
+                        ExecuteCommand("sc config WSearch start=delayed-auto");
+                        ExecuteCommand("sc config BITS start=delayed-auto");
+                    },
+                    () => {
+                        ExecuteCommand("sc config DiagTrack start=auto");
+                        ExecuteCommand("sc config wuauserv start=auto");
+                        ExecuteCommand("sc config WSearch start=auto");
+                        ExecuteCommand("sc config BITS start=auto");
+                    }
+                ),
+
+                ["DisableReservedStorage"] = new TweakAction(
+                    "Отключение зарезервированного хранилища Windows",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager", "ShippedWithReserves", 0, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager", "ShippedWithReserves", 1, RegistryValueKind.DWord)
+                ),
+
+                ["EnableUltimatePowerPlan"] = new TweakAction(
+                    "Включение скрытой схемы питания (максимальная производительность)",
+                    () => ExecuteCommand("powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61"),
+                    () => { /* Схема остаётся, пользователь может переключиться вручную */ }
+                ),
+
+                ["DisableScreenOff"] = new TweakAction(
+                    "Отключение автоотключения экрана (питание от сети)",
+                    () => ExecuteCommand("powercfg -change -monitor-timeout-ac 0"),
+                    () => ExecuteCommand("powercfg -change -monitor-timeout-ac 10")
+                ),
+
+                ["DisableDiskSleep"] = new TweakAction(
+                    "Отключение автоотключения дисков",
+                    () => ExecuteCommand("powercfg -change -disk-timeout-ac 0"),
+                    () => ExecuteCommand("powercfg -change -disk-timeout-ac 20")
+                ),
+
+                ["IncreaseThumbnailCache"] = new TweakAction(
+                    "Увеличение кэша превью изображений",
+                    () => {
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer", "ThumbCacheSizeMB", 1024, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer", "ThumbCacheSizeMB");
+                    }
+                ),
+
+                ["MoveTempFolder"] = new TweakAction(
+                    "Перенос папки Temp в корень диска C:\\Temp",
+                    () => {
+                        // Создаём папку и меняем переменные окружения
+                        ExecuteCommand("if not exist C:\\Temp mkdir C:\\Temp");
+                        ExecuteCommand("setx TEMP C:\\Temp /M");
+                        ExecuteCommand("setx TMP C:\\Temp /M");
+                    },
+                    () => {
+                        string defaultTemp = "%SystemRoot%\\Temp";
+                        ExecuteCommand($"setx TEMP {defaultTemp} /M");
+                        ExecuteCommand($"setx TMP {defaultTemp} /M");
+                    }
+                ),
+
                 // ═══════════════════════════════════════════════
                 // КОНФИДЕНЦИАЛЬНОСТЬ
                 // ═══════════════════════════════════════════════
@@ -478,11 +485,7 @@ namespace WindowsTweaks
                         ExecuteCommand("sc config DiagTrack start=disabled");
                     },
                     () => {
-<<<<<<< HEAD
-                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 1, RegistryValueKind.DWord);
-=======
                         SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 3, RegistryValueKind.DWord);
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                         ExecuteCommand("sc config DiagTrack start=auto");
                         ExecuteCommand("sc start DiagTrack");
                     }
@@ -497,11 +500,7 @@ namespace WindowsTweaks
                 ["DisableCortana"] = new TweakAction(
                     "Отключение Cortana",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 0, RegistryValueKind.DWord),
-<<<<<<< HEAD
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana")
-=======
-                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 1, RegistryValueKind.DWord)
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 ["DisableLocationTracking"] = new TweakAction(
@@ -525,22 +524,15 @@ namespace WindowsTweaks
                 ["BlockDiagnosticData"] = new TweakAction(
                     "Блокировка сбора диагностических данных",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection", "AllowTelemetry", 0, RegistryValueKind.DWord),
-<<<<<<< HEAD
-                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection", "AllowTelemetry", 1, RegistryValueKind.DWord)
-=======
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection", "AllowTelemetry", 3, RegistryValueKind.DWord)
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 ["DisableCloudSync"] = new TweakAction(
                     "Отключение облачной синхронизации",
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SettingSync", "SyncPolicy", 5, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SettingSync", "SyncPolicy", 1, RegistryValueKind.DWord)
-<<<<<<< HEAD
-=======
                 ),
 
-                // НОВЫЕ ТВИКИ КОНФИДЕНЦИАЛЬНОСТИ
                 ["DisableActivityHistory"] = new TweakAction(
                     "Отключить историю действий",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System", "PublishUserActivities", 0, RegistryValueKind.DWord),
@@ -563,7 +555,42 @@ namespace WindowsTweaks
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", 1, RegistryValueKind.DWord);
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "PreInstalledAppsEnabled", 1, RegistryValueKind.DWord);
                     }
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+                ),
+
+                // НОВЫЕ ТВИКИ КОНФИДЕНЦИАЛЬНОСТИ
+
+                ["DisableGameModeNotifications"] = new TweakAction(
+                    "Отключение уведомлений игрового режима",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\GameBar", "ShowStartupPanel", 0, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\GameBar", "GamePanelStartupTipIndex", 3, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\GameBar", "AllowAutoGameMode", 0, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\GameBar", "ShowStartupPanel");
+                        DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\GameBar", "GamePanelStartupTipIndex");
+                        DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\GameBar", "AllowAutoGameMode");
+                    }
+                ),
+
+                ["MinimizeSystemReports"] = new TweakAction(
+                    "Минимизация системных отчётов (снижение нагрузки на диск)",
+                    () => {
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting", "Disabled", 1, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting", "DontSendAdditionalData", 1, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Consent", "DefaultConsent", 0, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting", "Disabled");
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting", "DontSendAdditionalData");
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Consent", "DefaultConsent", 1, RegistryValueKind.DWord);
+                    }
+                ),
+
+                ["DisableAudioDucking"] = new TweakAction(
+                    "Отключение автоприглушения звука при использовании микрофона",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Multimedia\Audio", "UserDuckingPreference", 3, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Multimedia\Audio", "UserDuckingPreference", 0, RegistryValueKind.DWord)
                 ),
 
                 // ═══════════════════════════════════════════════
@@ -573,19 +600,11 @@ namespace WindowsTweaks
                 ["DisableIPv6"] = new TweakAction(
                     "Отключение IPv6",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents", 0xFF, RegistryValueKind.DWord),
-<<<<<<< HEAD
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents")
                 ),
 
                 ["OptimizeTCPIP"] = new TweakAction(
                     "Оптимизация TCP/IP",
-=======
-                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents", 0, RegistryValueKind.DWord)
-                ),
-
-                ["OptimizeTCPIP"] = new TweakAction(
-                    "Оптимизация настроек TCP/IP",
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     () => {
                         ExecuteCommand("netsh int tcp set global autotuninglevel=normal");
                         ExecuteCommand("netsh int tcp set global chimney=enabled");
@@ -603,11 +622,7 @@ namespace WindowsTweaks
                 ["FlushDNSCache"] = new TweakAction(
                     "Очистка кэша DNS",
                     () => ExecuteCommand("ipconfig /flushdns"),
-<<<<<<< HEAD
-                    () => { } // Нет отмены для очистки кэша
-=======
-                    () => { /* Нет действия для отмены */ }
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+                    () => { }
                 ),
 
                 ["ResetNetworkAdapters"] = new TweakAction(
@@ -616,22 +631,7 @@ namespace WindowsTweaks
                         ExecuteCommand("netsh winsock reset");
                         ExecuteCommand("netsh int ip reset");
                     },
-<<<<<<< HEAD
-                    () => { } // Нет отмены для сброса адаптеров
-                ),
-
-                ["DisableNetBIOS"] = new TweakAction(
-                    "Отключение NetBIOS через TCP/IP",
-                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "EnableLMHOSTS", 0, RegistryValueKind.DWord),
-                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "EnableLMHOSTS", 1, RegistryValueKind.DWord)
-                ),
-
-                ["EnableQoS"] = new TweakAction(
-                    "Включение QoS (Quality of Service)",
-                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit", 0, RegistryValueKind.DWord),
-                    () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit")
-=======
-                    () => { /* Нет действия для отмены */ }
+                    () => { }
                 ),
 
                 ["DisableMeteredConnection"] = new TweakAction(
@@ -646,7 +646,6 @@ namespace WindowsTweaks
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Psched", "NonBestEffortLimit")
                 ),
 
-                // НОВЫЕ ТВИКИ СЕТИ
                 ["DisableNetBIOS"] = new TweakAction(
                     "Отключить NetBIOS через TCP/IP (безопасность)",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "NodeType", 2, RegistryValueKind.DWord),
@@ -663,45 +662,23 @@ namespace WindowsTweaks
                     "Оптимизировать MTU для лучшей производительности",
                     () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1500 store=persistent"),
                     () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1500 store=persistent")
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                 ),
 
                 // ═══════════════════════════════════════════════
-                // ВНЕШНИЙ ВИД (ИСПРАВЛЕНО!)
+                // ВНЕШНИЙ ВИД
                 // ═══════════════════════════════════════════════
 
                 ["EnableDarkTheme"] = new TweakAction(
                     "Включение темной темы Windows",
                     () => {
-                        // Темная тема для приложений
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 0, RegistryValueKind.DWord);
-                        // Темная тема для системы
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 0, RegistryValueKind.DWord);
-<<<<<<< HEAD
+                        try { ExecuteCommand("taskkill /f /im explorer.exe & start explorer.exe"); } catch { }
                     },
                     () => {
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1, RegistryValueKind.DWord);
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 1, RegistryValueKind.DWord);
-=======
-                        // Автоматический перезапуск Explorer для применения темы
-                        try 
-                        { 
-                            ExecuteCommand("taskkill /f /im explorer.exe & start explorer.exe"); 
-                        } 
-                        catch { /* Игнорируем ошибки перезапуска */ }
-                    },
-                    () => {
-                        // Светлая тема для приложений
-                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1, RegistryValueKind.DWord);
-                        // Светлая тема для системы
-                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 1, RegistryValueKind.DWord);
-                        // Автоматический перезапуск Explorer для применения темы
-                        try 
-                        { 
-                            ExecuteCommand("taskkill /f /im explorer.exe & start explorer.exe"); 
-                        } 
-                        catch { /* Игнорируем ошибки перезапуска */ }
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+                        try { ExecuteCommand("taskkill /f /im explorer.exe & start explorer.exe"); } catch { }
                     }
                 ),
 
@@ -719,7 +696,6 @@ namespace WindowsTweaks
 
                 ["ClassicContextMenu"] = new TweakAction(
                     "Классическое контекстное меню (Windows 11)",
-<<<<<<< HEAD
                     () => {
                         using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"))
                         {
@@ -727,34 +703,19 @@ namespace WindowsTweaks
                         }
                     },
                     () => {
-                        try
-                        {
-                            Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}");
-                        }
+                        try { Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"); }
                         catch { }
                     }
                 ),
 
                 ["DisableTaskbarGrouping"] = new TweakAction(
                     "Отключение группировки кнопок на панели задач",
-=======
-                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32", "", "", RegistryValueKind.String),
-                    () => DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32", "")
-                ),
-
-                ["DisableTaskbarGrouping"] = new TweakAction(
-                    "Отключить группировку на панели задач",
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarGlomLevel", 2, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarGlomLevel", 0, RegistryValueKind.DWord)
                 ),
 
                 ["SmallTaskbarIcons"] = new TweakAction(
-<<<<<<< HEAD
                     "Использовать мелкие значки на панели задач",
-=======
-                    "Мелкие значки на панели задач",
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarSmallIcons", 1, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarSmallIcons", 0, RegistryValueKind.DWord)
                 ),
@@ -763,11 +724,8 @@ namespace WindowsTweaks
                     "Убрать виджеты с панели задач (Windows 11)",
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarDa", 0, RegistryValueKind.DWord),
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarDa", 1, RegistryValueKind.DWord)
-<<<<<<< HEAD
-=======
                 ),
 
-                // НОВЫЕ ТВИКИ ВНЕШНЕГО ВИДА
                 ["ShowFullPath"] = new TweakAction(
                     "Показывать полный путь в заголовке Проводника",
                     () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState", "FullPath", 1, RegistryValueKind.DWord),
@@ -790,7 +748,28 @@ namespace WindowsTweaks
                     "Отключить экран блокировки",
                     () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen", 1, RegistryValueKind.DWord),
                     () => DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen")
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+                ),
+
+                // НОВЫЕ ТВИКИ ВНЕШНЕГО ВИДА
+
+                ["DisableWallpaperCompression"] = new TweakAction(
+                    "Отключение сжатия обоев (сохранение исходного качества)",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Desktop", "JPEGImportQuality", 100, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Desktop", "JPEGImportQuality")
+                ),
+
+                ["DisableStickyKeys"] = new TweakAction(
+                    "Отключение залипания клавиш",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys", "Flags", "506", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Accessibility\Keyboard Response", "Flags", "122", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Accessibility\ToggleKeys", "Flags", "58", RegistryValueKind.String);
+                    },
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Accessibility\StickyKeys", "Flags", "510", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Accessibility\Keyboard Response", "Flags", "126", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Accessibility\ToggleKeys", "Flags", "62", RegistryValueKind.String);
+                    }
                 ),
 
                 // ═══════════════════════════════════════════════
@@ -868,12 +847,9 @@ namespace WindowsTweaks
                         ExecuteCommand("sc config DiagTrack start=auto");
                         ExecuteCommand("sc start DiagTrack");
                         ExecuteCommand("sc config diagnosticshub.standardcollector.service start=demand");
-<<<<<<< HEAD
-=======
                     }
                 ),
 
-                // НОВЫЕ ТВИКИ СЛУЖБ
                 ["DisableRemoteRegistry"] = new TweakAction(
                     "Отключить службу удаленного реестра",
                     () => {
@@ -907,7 +883,26 @@ namespace WindowsTweaks
                     },
                     () => {
                         ExecuteCommand("sc config WerSvc start=demand");
->>>>>>> 72e994d (Обновил контекстное меню добавил 17 твиков, версия 2.5)
+                    }
+                ),
+
+                // НОВЫЙ ТВИК СЛУЖБ — уже частично покрывается DelayedServicesStart
+                // Восстановление запуска командной строки из папки — в секции Администрирование (через реестр)
+
+                ["RestoreCmdHereContext"] = new TweakAction(
+                    "Восстановление запуска командной строки из папки",
+                    () => {
+                        // Возвращает «Открыть окно команд здесь» в контекстное меню
+                        // Используем команду reg для работы с HKCR с правами администратора
+                        ExecuteCommand("reg delete \"HKEY_CLASSES_ROOT\\Directory\\shell\\cmd\" /v HideBasedOnVelocityId /f");
+                        ExecuteCommand("reg delete \"HKEY_CLASSES_ROOT\\Directory\\Background\\shell\\cmd\" /v HideBasedOnVelocityId /f");
+                        ExecuteCommand("reg delete \"HKEY_CLASSES_ROOT\\Directory\\shell\\cmd\" /v ShowBasedOnVelocityId /f");
+                        ExecuteCommand("reg delete \"HKEY_CLASSES_ROOT\\Directory\\Background\\shell\\cmd\" /v ShowBasedOnVelocityId /f");
+                    },
+                    () => {
+                        // Скрывает обратно пункт меню
+                        ExecuteCommand("reg add \"HKEY_CLASSES_ROOT\\Directory\\shell\\cmd\" /v HideBasedOnVelocityId /t REG_DWORD /d 6604448 /f");
+                        ExecuteCommand("reg add \"HKEY_CLASSES_ROOT\\Directory\\Background\\shell\\cmd\" /v HideBasedOnVelocityId /t REG_DWORD /d 6604448 /f");
                     }
                 ),
             };
@@ -933,10 +928,7 @@ namespace WindowsTweaks
                 using (RegistryKey key = baseKey.CreateSubKey(subKeyPath, true))
                 {
                     if (key == null)
-                    {
                         throw new Exception($"Не удалось создать или открыть ключ: {subKeyPath}");
-                    }
-
                     key.SetValue(valueName, value, valueKind);
                 }
             }
@@ -971,14 +963,8 @@ namespace WindowsTweaks
                 {
                     if (key != null)
                     {
-                        try
-                        {
-                            key.DeleteValue(valueName, false);
-                        }
-                        catch
-                        {
-                            // Значение не существует - игнорируем
-                        }
+                        try { key.DeleteValue(valueName, false); }
+                        catch { }
                     }
                 }
             }
@@ -1000,18 +986,20 @@ namespace WindowsTweaks
                 {
                     FileName = "cmd.exe",
                     Arguments = $"/c {command}",
-                    Verb = "runas",
                     UseShellExecute = true,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    // Важно: запускаем с повышением прав для команд реестра
+                    Verb = command.Contains("reg ") || command.Contains("sc ") || 
+                           command.Contains("powercfg") || command.Contains("netsh") 
+                           ? "runas" : ""
                 };
 
                 var process = Process.Start(psi);
 
                 if (process != null)
                 {
-                    bool finished = process.WaitForExit(30000); // Таймаут 30 секунд
-
+                    bool finished = process.WaitForExit(30000);
                     if (!finished)
                     {
                         process.Kill();
@@ -1021,7 +1009,6 @@ namespace WindowsTweaks
             }
             catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
             {
-                // Пользователь отменил UAC
                 throw new OperationCanceledException("Операция отменена пользователем (UAC)");
             }
             catch (UnauthorizedAccessException)
