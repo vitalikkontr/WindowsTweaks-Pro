@@ -61,6 +61,53 @@ namespace WindowsTweaks
             return new List<string>(appliedTweaks);
         }
 
+        /// <summary>
+        /// Возвращает список твиков, которые включены (галочка стоит), но ещё не применены к системе.
+        /// Используется кнопкой "Применить".
+        /// </summary>
+        public List<string> GetEnabledButNotAppliedTweaks()
+        {
+            return enabledTweaks
+                .Where(t => !appliedTweaks.Contains(t))
+                .ToList();
+        }
+
+        /// <summary>
+        /// Применяет конкретный список твиков (по кнопке "Применить").
+        /// </summary>
+        public async Task ApplySelectedTweaksAsync(List<string> tweakKeys)
+        {
+            failedTweaks.Clear();
+
+            await Task.Run(() =>
+            {
+                foreach (var tweakKey in tweakKeys)
+                {
+                    if (tweakActions.ContainsKey(tweakKey))
+                    {
+                        try
+                        {
+                            tweakActions[tweakKey].Apply();
+                            if (!appliedTweaks.Contains(tweakKey))
+                                appliedTweaks.Add(tweakKey);
+                            Debug.WriteLine($"✓ Применён твик: {tweakKey}");
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            failedTweaks.Add($"{tweakKey} (требуются права администратора)");
+                        }
+                        catch (Exception ex)
+                        {
+                            failedTweaks.Add($"{tweakKey} ({ex.Message})");
+                        }
+                    }
+                }
+            });
+
+            SaveAppliedTweaksState();
+            LogResults();
+        }
+
         public async Task ApplyAllTweaksAsync()
         {
             failedTweaks.Clear();

@@ -63,7 +63,7 @@ namespace WindowsTweaks
             AddTweakCheckbox("Увеличить кэш DNS", "IncreaseDNSCache",
                 "Ускоряет разрешение доменных имён за счёт большего кэша");
             AddTweakCheckbox("Отключить Windows Defender (требует осторожности!)", "DisableDefender",
-                "Полностью отключает встроенный антивирус — только если есть сторонний!");
+                "Полностью отключает встроенный антивирус — только если есть сторонний! перед приминением требуется отключение зашиты в самом антивируснке");
             AddTweakCheckbox("Отключить задержку запуска программ при старте", "DisableStartupDelay",
                 "Убирает 10-секундную задержку перед запуском программ автозагрузки");
             AddTweakCheckbox("Отключить фоновые приложения", "DisableBackgroundApps",
@@ -598,7 +598,7 @@ namespace WindowsTweaks
                 FontSize = 16,
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 8, 0),
-                ToolTip = isApplied ? "Твик применен" : "Твик не применен"
+                ToolTip = isApplied ? "Твик применён" : "Твик не применён"
             };
 
             var checkbox = new CheckBox
@@ -613,86 +613,42 @@ namespace WindowsTweaks
 
             bool isUpdating = false;
 
-            checkbox.Checked += async (s, e) =>
+            // При установке галочки — только помечаем твик как "нужно применить"
+            checkbox.Checked += (s, e) =>
             {
                 if (isUpdating) return;
 
-                StatusText.Text = $"⏳ Применяется: {label}...";
+                // Если твик уже применён — снимаем пометку "к отмене"
+                tweakEngine.EnableTweak(tweakKey);
 
-                try
-                {
-                    tweakEngine.EnableTweak(tweakKey);
-                    await tweakEngine.ApplySelectedTweakAsync(tweakKey);
+                // Визуально показываем "ожидает применения" (жёлтый цвет)
+                checkbox.Foreground = new SolidColorBrush(Color.FromRgb(255, 193, 7));
+                statusIcon.Text = "🔲";
+                statusIcon.ToolTip = "Ожидает применения (нажмите «Применить»)";
 
-                    statusIcon.Text = "✅";
-                    statusIcon.ToolTip = "Твик применен";
-                    checkbox.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-
-                    StatusText.Text = $"✅ Применено: {label}";
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    isUpdating = true;
-                    checkbox.IsChecked = false;
-                    isUpdating = false;
-
-                    StatusText.Text = "❌ Требуются права администратора!";
-                    MessageBox.Show(
-                        $"Для применения твика \"{label}\" требуются права администратора.\n\n" +
-                        "Запустите программу от имени администратора.",
-                        "Недостаточно прав",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-                catch (Exception ex)
-                {
-                    isUpdating = true;
-                    checkbox.IsChecked = false;
-                    isUpdating = false;
-
-                    StatusText.Text = $"❌ Ошибка: {ex.Message}";
-                    MessageBox.Show(
-                        $"Ошибка применения твика:\n{ex.Message}",
-                        "Ошибка",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                StatusText.Text = $"📋 Отмечено для применения: {label}";
             };
 
-            checkbox.Unchecked += async (s, e) =>
+            // При снятии галочки — только помечаем твик как "нужно отменить"
+            checkbox.Unchecked += (s, e) =>
             {
                 if (isUpdating) return;
 
-                StatusText.Text = $"⏳ Отменяется: {label}...";
+                tweakEngine.DisableTweak(tweakKey);
 
-                try
-                {
-                    tweakEngine.DisableTweak(tweakKey);
-                    await tweakEngine.RevertSelectedTweakAsync(tweakKey);
+                // Визуально показываем "ожидает отмены" (красноватый цвет)
+                checkbox.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+                statusIcon.Text = "🔳";
+                statusIcon.ToolTip = "Ожидает отмены (нажмите «Отменить»)";
 
-                    statusIcon.Text = "⬜";
-                    statusIcon.ToolTip = "Твик не применен";
-                    checkbox.Foreground = Brushes.White;
-
-                    StatusText.Text = $"↩️ Отменено: {label}";
-                }
-                catch (Exception ex)
-                {
-                    isUpdating = true;
-                    checkbox.IsChecked = true;
-                    isUpdating = false;
-
-                    StatusText.Text = $"❌ Ошибка отмены: {ex.Message}";
-                    MessageBox.Show(
-                        $"Ошибка отмены твика:\n{ex.Message}",
-                        "Ошибка",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                StatusText.Text = $"📋 Отмечено для отмены: {label}";
             };
 
             isUpdating = true;
             checkbox.IsChecked = isApplied;
+            // После инициализации — восстановить корректный цвет (без жёлтого/красного)
+            checkbox.Foreground = isApplied ? new SolidColorBrush(Color.FromRgb(76, 175, 80)) : Brushes.White;
+            statusIcon.Text = isApplied ? "✅" : "⬜";
             isUpdating = false;
 
             stackPanel.Children.Add(statusIcon);
@@ -736,8 +692,23 @@ namespace WindowsTweaks
 
         private async void ApplyChanges_Click(object sender, RoutedEventArgs e)
         {
+            // Собираем все твики, которые включены (галочка стоит), но ещё не применены
+            var tweaksToApply = tweakEngine.GetEnabledButNotAppliedTweaks();
+
+            if (tweaksToApply.Count == 0)
+            {
+                MessageBox.Show(
+                    "Нет твиков для применения.\n\n" +
+                    "Поставьте галочки напротив твиков, которые хотите применить,\n" +
+                    "затем нажмите эту кнопку.",
+                    "Информация",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             var result = MessageBox.Show(
-                "Вы уверены, что хотите применить выбранные изменения?\n\n" +
+                $"Будет применено твиков: {tweaksToApply.Count}\n\n" +
                 "Рекомендуется создать точку восстановления перед применением.",
                 "Подтверждение",
                 MessageBoxButton.YesNo,
@@ -745,22 +716,20 @@ namespace WindowsTweaks
 
             if (result == MessageBoxResult.Yes)
             {
-                StatusText.Text = "Применение изменений...";
+                StatusText.Text = $"⏳ Применение {tweaksToApply.Count} твиков...";
 
                 try
                 {
-                    await tweakEngine.ApplyAllTweaksAsync();
-                    StatusText.Text = "Изменения успешно применены!";
+                    await tweakEngine.ApplySelectedTweaksAsync(tweaksToApply);
+                    StatusText.Text = $"✅ Успешно применено {tweaksToApply.Count} твиков!";
 
                     MessageBox.Show(
                         "╔═══════════════════════════════════════════════════╗\n" +
                         "║   ✅ ИЗМЕНЕНИЯ УСПЕШНО ПРИМЕНЕНЫ!                 ║\n" +
                         "╚═══════════════════════════════════════════════════╝\n\n" +
-                        "📋 Важные замечания:\n\n" +
+                        $"📋 Применено твиков: {tweaksToApply.Count}\n\n" +
                         "• Некоторые изменения вступят в силу после\n" +
                         "  перезагрузки системы\n\n" +
-                        "• Темная тема применяется автоматически\n" +
-                        "  (Explorer перезапускается автоматически)\n\n" +
                         "• Проверьте логи в %AppData%\\WindowsTweaks\\Logs",
                         "Успешно",
                         MessageBoxButton.OK,
@@ -770,7 +739,7 @@ namespace WindowsTweaks
                 }
                 catch (Exception ex)
                 {
-                    StatusText.Text = "Ошибка при применении изменений";
+                    StatusText.Text = "❌ Ошибка при применении изменений";
                     MessageBox.Show(
                         $"Произошла ошибка:\n{ex.Message}",
                         "Ошибка",
@@ -1243,6 +1212,7 @@ namespace WindowsTweaks
 
         private async void RevertChanges_Click(object sender, RoutedEventArgs e)
         {
+            // Отменяем только те твики, которые ПРИМЕНЕНЫ, но галочка с них СНЯТА
             var tweaksToRevert = new List<string>();
 
             foreach (var appliedTweak in tweakEngine.GetAppliedTweaks())
@@ -1264,8 +1234,7 @@ namespace WindowsTweaks
             }
 
             var result = MessageBox.Show(
-                $"⚠️ ВЫ УВЕРЕНЫ, ЧТО ХОТИТЕ ОТМЕНИТЬ ВЫБРАННЫЕ ТВИКИ?\n\n" +
-                $"Будет отменено твиков: {tweaksToRevert.Count}\n\n" +
+                $"⚠️ Будет отменено твиков: {tweaksToRevert.Count}\n\n" +
                 "Отменяются только те твики, с которых СНЯТЫ галочки.\n" +
                 "Твики с установленными галочками останутся активными.\n\n" +
                 "⚠️ ВНИМАНИЕ: Некоторые изменения могут потребовать перезагрузки!",
