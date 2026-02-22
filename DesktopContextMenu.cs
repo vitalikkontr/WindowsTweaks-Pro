@@ -34,9 +34,8 @@ namespace WindowsTweaks
             int failCount = 0;
             StringBuilder result = new StringBuilder();
 
-            result.AppendLine("╔════════════════════════════════════════════════════╗");
-            result.AppendLine("║   ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ В МЕНЮ РАБОЧЕГО СТОЛА    ║");
-            result.AppendLine("╚════════════════════════════════════════════════════╝");
+            result.AppendLine("◆  ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ В МЕНЮ РАБОЧЕГО СТОЛА");
+            result.AppendLine("────────────────────────────────────────────");
             result.AppendLine();
 
             foreach (var tool in MainTools)
@@ -89,10 +88,9 @@ namespace WindowsTweaks
             }
 
             result.AppendLine();
-            result.AppendLine("════════════════════════════════════════════════════");
-            result.AppendLine($"Успешно добавлено: {successCount}");
-            result.AppendLine($"Ошибок: {failCount}");
-            result.AppendLine("════════════════════════════════════════════════════");
+            result.AppendLine("────────────────────────────────────────────");
+            result.AppendLine($"Успешно добавлено:   {successCount}");
+            result.AppendLine($"Ошибок:              {failCount}");
 
             if (successCount > 0)
             {
@@ -170,7 +168,7 @@ namespace WindowsTweaks
                 key.SetValue("Position", "Bottom", RegistryValueKind.String);
             }
 
-            CreateSubItem(menuKey, "01Themes", "Темы", "themecpl.dll", "control /name Microsoft.Personalization /page pageWallpaper");
+            CreateSubItem(menuKey, "01Themes", "Темы", "themecpl.dll", "control /name Microsoft.Personalization");
             CreateSubItem(menuKey, "02Background", "Фон рабочего стола", "imageres.dll,-112", "control /name Microsoft.Personalization /page pageWallpaper");
             CreateSubItem(menuKey, "03Colors", "Цвета", "themecpl.dll", "control /name Microsoft.Personalization /page pageColorization");
             CreateSubItem(menuKey, "04Fonts", "Шрифты", "fontext.dll", "control fonts");
@@ -241,9 +239,8 @@ namespace WindowsTweaks
             int successCount = 0;
             StringBuilder result = new StringBuilder();
 
-            result.AppendLine("╔════════════════════════════════════════════════════╗");
-            result.AppendLine("║   УДАЛЕНИЕ ИНСТРУМЕНТОВ ИЗ МЕНЮ РАБОЧЕГО СТОЛА     ║");
-            result.AppendLine("╚════════════════════════════════════════════════════╝");
+            result.AppendLine("◆  УДАЛЕНИЕ ИНСТРУМЕНТОВ ИЗ МЕНЮ РАБОЧЕГО СТОЛА");
+            result.AppendLine("────────────────────────────────────────────");
             result.AppendLine();
 
             foreach (var toolKey in MainTools.Keys)
@@ -281,9 +278,8 @@ namespace WindowsTweaks
             catch { }
 
             result.AppendLine();
-            result.AppendLine("════════════════════════════════════════════════════");
-            result.AppendLine($"Успешно удалено: {successCount}");
-            result.AppendLine("════════════════════════════════════════════════════");
+            result.AppendLine("────────────────────────────────────────────");
+            result.AppendLine($"Успешно удалено:   {successCount}");
 
             if (successCount > 0)
             {
@@ -423,17 +419,45 @@ namespace WindowsTweaks
         {
             StringBuilder info = new StringBuilder();
 
-            info.AppendLine("╔═══════════════════════════════════════════════════════════╗");
-            info.AppendLine("║       ДИАГНОСТИКА КОНТЕКСТНОГО МЕНЮ РАБОЧЕГО СТОЛА        ║");
-            info.AppendLine("╚═══════════════════════════════════════════════════════════╝");
+            info.AppendLine("◆  ДИАГНОСТИКА КОНТЕКСТНОГО МЕНЮ РАБОЧЕГО СТОЛА");
+            info.AppendLine("────────────────────────────────────────────");
             info.AppendLine();
-            info.AppendLine("ИКОНКИ В 'СИСТЕМНЫЕ УТИЛИТЫ':");
-            info.AppendLine("  • Диспетчер устройств → devmgr.dll");
-            info.AppendLine("  • Управление дисками → imageres.dll,-109");
-            info.AppendLine("  • Параметры папок → shell32.dll,-210");
-            info.AppendLine("  • Просмотр событий → eventvwr.exe");
+            info.AppendLine($"Права администратора:   {(IsAdministrator() ? "✓  Да" : "✗  Нет (не требуются)")}");
             info.AppendLine();
-            info.AppendLine("ВСЕ ИКОНКИ ДОБАВЛЕНЫ! ✓");
+
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(BasePath);
+
+                info.AppendLine("◇  ОСНОВНЫЕ ИНСТРУМЕНТЫ");
+                info.AppendLine("────────────────────────────────────────────");
+                foreach (var tool in MainTools)
+                {
+                    using var sub = key?.OpenSubKey(tool.Key);
+                    string status = sub != null ? "✓" : "✗";
+                    info.AppendLine($"{status}  {tool.Value.Title}");
+                }
+                info.AppendLine();
+
+                info.AppendLine("◇  ПОДМЕНЮ");
+                info.AppendLine("────────────────────────────────────────────");
+                using var personKey = key?.OpenSubKey("PersonalizationPlus");
+                info.AppendLine($"{(personKey != null ? "✓" : "✗")}  Персонализация+");
+                using var utilKey = key?.OpenSubKey("SystemUtilities");
+                info.AppendLine($"{(utilKey != null ? "✓" : "✗")}  Системные утилиты");
+                info.AppendLine();
+
+                info.AppendLine("◇  ИКОНКИ В «СИСТЕМНЫЕ УТИЛИТЫ»");
+                info.AppendLine("────────────────────────────────────────────");
+                info.AppendLine("✓  Диспетчер устройств       →  devmgr.dll");
+                info.AppendLine("✓  Управление дисками        →  imageres.dll,-109");
+                info.AppendLine("✓  Параметры папок           →  shell32.dll,-210");
+                info.AppendLine("✓  Просмотр событий          →  eventvwr.exe");
+            }
+            catch (Exception ex)
+            {
+                info.AppendLine($"✗  Ошибка чтения реестра: {ex.Message}");
+            }
 
             return info.ToString();
         }

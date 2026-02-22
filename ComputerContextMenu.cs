@@ -76,9 +76,8 @@ namespace WindowsTweaks
             int failCount = 0;
             System.Text.StringBuilder result = new System.Text.StringBuilder();
 
-            result.AppendLine("╔════════════════════════════════════════════════════╗");
-            result.AppendLine("║      ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ В КОНТЕКСТНОЕ МЕНЮ    ║");
-            result.AppendLine("╚════════════════════════════════════════════════════╝");
+            result.AppendLine("◆  ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ В КОНТЕКСТНОЕ МЕНЮ");
+            result.AppendLine("────────────────────────────────────────────");
             result.AppendLine();
 
             foreach (var tool in SystemTools)
@@ -121,10 +120,9 @@ namespace WindowsTweaks
             }
 
             result.AppendLine();
-            result.AppendLine("════════════════════════════════════════════════════");
-            result.AppendLine($"Успешно добавлено: {successCount}");
-            result.AppendLine($"Ошибок: {failCount}");
-            result.AppendLine("════════════════════════════════════════════════════");
+            result.AppendLine("────────────────────────────────────────────");
+            result.AppendLine($"Успешно добавлено:   {successCount}");
+            result.AppendLine($"Ошибок:              {failCount}");
 
             if (successCount > 0)
             {
@@ -240,9 +238,8 @@ namespace WindowsTweaks
             int failCount = 0;
             System.Text.StringBuilder result = new System.Text.StringBuilder();
 
-            result.AppendLine("╔════════════════════════════════════════════════════╗");
-            result.AppendLine("║      УДАЛЕНИЕ ИНСТРУМЕНТОВ ИЗ КОНТЕКСТНОГО МЕНЮ    ║");
-            result.AppendLine("╚════════════════════════════════════════════════════╝");
+            result.AppendLine("◆  УДАЛЕНИЕ ИНСТРУМЕНТОВ ИЗ КОНТЕКСТНОГО МЕНЮ");
+            result.AppendLine("────────────────────────────────────────────");
             result.AppendLine();
 
             // Удаляем всю ветку shell целиком (быстрее и надёжнее)
@@ -270,10 +267,9 @@ namespace WindowsTweaks
             }
 
             result.AppendLine();
-            result.AppendLine("════════════════════════════════════════════════════");
-            result.AppendLine($"Операций выполнено успешно: {successCount}");
-            result.AppendLine($"Ошибок: {failCount}");
-            result.AppendLine("════════════════════════════════════════════════════");
+            result.AppendLine("────────────────────────────────────────────");
+            result.AppendLine($"Успешно удалено:   {successCount}");
+            result.AppendLine($"Ошибок:            {failCount}");
 
             if (successCount > 0)
             {
@@ -401,32 +397,32 @@ namespace WindowsTweaks
         {
             System.Text.StringBuilder info = new System.Text.StringBuilder();
 
-            info.AppendLine("╔═══════════════════════════════════════════════════════════╗");
-            info.AppendLine("║         ДИАГНОСТИКА КОНТЕКСТНОГО МЕНЮ                     ║");
-            info.AppendLine("╚═══════════════════════════════════════════════════════════╝");
+            info.AppendLine("◆  ДИАГНОСТИКА КОНТЕКСТНОГО МЕНЮ");
+            info.AppendLine("────────────────────────────────────────────");
             info.AppendLine();
-            info.AppendLine($"Права администратора: {(IsAdministrator() ? "✓ Да" : "✗ Нет (не требуются)")}");
+            info.AppendLine($"Права администратора:   {(IsAdministrator() ? "✓  Да" : "✗  Нет (не требуются)")}");
             info.AppendLine();
 
-            // Проверяем HKEY_CURRENT_USER
-            info.AppendLine("ПУТЬ: HKEY_CURRENT_USER");
-            info.AppendLine("───────────────────────────────────────────────────────────");
-            info.AppendLine($"Путь: HKCU\\{BaseRegistryPath}");
+            info.AppendLine("◇  РЕЕСТР  —  HKEY_CURRENT_USER");
+            info.AppendLine("────────────────────────────────────────────");
+            info.AppendLine($"Путь:   HKCU\\{BaseRegistryPath}");
+            info.AppendLine();
 
             try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(BaseRegistryPath);
-                info.AppendLine($"Ключ существует: {(key != null ? "✓ Да" : "✗ Нет")}");
+                info.AppendLine($"Ключ существует:     {(key != null ? "✓  Да" : "✗  Нет")}");
 
                 if (key != null)
                 {
                     var subKeys = key.GetSubKeyNames();
-                    info.AppendLine($"Найдено подключей: {subKeys.Length}");
+                    info.AppendLine($"Найдено подключей:   {subKeys.Length}");
+                    info.AppendLine();
 
                     if (subKeys.Length > 0)
                     {
-                        info.AppendLine();
-                        info.AppendLine("Установленные инструменты:");
+                        info.AppendLine("◇  УСТАНОВЛЕННЫЕ ИНСТРУМЕНТЫ");
+                        info.AppendLine("────────────────────────────────────────────");
 
                         foreach (var toolKey in SystemTools.Keys)
                         {
@@ -434,7 +430,7 @@ namespace WindowsTweaks
                             if (subKey != null)
                             {
                                 string title = subKey.GetValue("", "").ToString();
-                                info.AppendLine($"  ✓ {toolKey}: {title}");
+                                info.AppendLine($"✓  {title}");
                             }
                         }
 
@@ -443,14 +439,13 @@ namespace WindowsTweaks
                         if (safeModeKey != null)
                         {
                             string title = safeModeKey.GetValue("MUIVerb", "").ToString();
-                            info.AppendLine($"  ✓ SafeMode: {title}");
+                            info.AppendLine($"✓  {title}");
 
-                            // Проверяем подпункты
                             using var shellKey = safeModeKey.OpenSubKey("shell");
                             if (shellKey != null)
                             {
                                 var subMenuKeys = shellKey.GetSubKeyNames();
-                                info.AppendLine($"    └─ Подпунктов: {subMenuKeys.Length}");
+                                info.AppendLine($"    └─  подпунктов: {subMenuKeys.Length}");
                             }
                         }
                     }
@@ -458,21 +453,10 @@ namespace WindowsTweaks
             }
             catch (Exception ex)
             {
-                info.AppendLine($"Ошибка: {ex.Message}");
+                info.AppendLine($"✗  Ошибка: {ex.Message}");
             }
 
-            info.AppendLine();
-            info.AppendLine("═══════════════════════════════════════════════════════════");
-            info.AppendLine();
-            info.AppendLine("ИНСТРУКЦИЯ:");
-            info.AppendLine("1. Закройте все окна 'Этот компьютер'");
-            info.AppendLine("2. Откройте 'Этот компьютер' заново");
-            info.AppendLine("3. Щёлкните правой кнопкой мыши");
-            info.AppendLine("4. Найдите новые пункты в контекстном меню");
-            info.AppendLine();
-            info.AppendLine("Если не появились:");
-            info.AppendLine("• Нажмите F5 для обновления");
-            info.AppendLine("• Или перезапустите explorer.exe вручную");
+
 
             return info.ToString();
         }

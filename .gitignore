@@ -1,25 +1,27 @@
-# Visual Studio
 .vs/
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
 
-# User files
 *.user
 *.suo
 *.cache
 *.log
+*.tmp
 
-# Build
-*.exe
-*.dll
 *.pdb
+# *.exe 
+# *.dll  
 
-# Publish
-publish/
-
-# Inno Setup output
+[Pp]ublish/
 /Output/
 /Release/
+/*/PublishProfiles/
+*.pubxml
+*.pubxml.user
 
-# Config
 config.ini
+
+Thumbs.db
+Desktop.ini

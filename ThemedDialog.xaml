@@ -1,0 +1,191 @@
+<Window x:Class="WindowsTweaks.ThemedDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        MinWidth="380" MaxWidth="540">
+
+    <Border Background="#121A14"
+            CornerRadius="12"
+            BorderBrush="#243328"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="32" ShadowDepth="0" Opacity="0.80"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Шапка диалога -->
+            <Border Grid.Row="0"
+                    Background="#182019"
+                    CornerRadius="12,12,0,0"
+                    Padding="16,12"
+                    MouseLeftButtonDown="Header_MouseDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="26"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="26"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="TitleText"
+                               Grid.Column="1"
+                               Text="WindowsTweaks Pro"
+                               Foreground="#E8F5EC"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"/>
+
+                    <Button Grid.Column="2"
+                            Width="26" Height="26"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Click="CloseBtn_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="b" Background="Transparent" CornerRadius="5">
+                                    <TextBlock Text="✕" Foreground="#6B9B75" FontSize="12"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="b" Property="Background" Value="#8B2020"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Разделитель под шапкой -->
+            <Rectangle Grid.Row="0" Height="1" VerticalAlignment="Bottom"
+                       Fill="#243328"/>
+
+            <!-- Тело: иконка + текст (вертикально, по центру) -->
+            <StackPanel Grid.Row="1"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Center"
+                        Margin="32,28,32,20">
+
+                <!-- Иконка -->
+                <Border x:Name="IconBorder"
+                        Width="52" Height="52"
+                        Background="#1A3D28"
+                        CornerRadius="14"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,16">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#4CAF78" BlurRadius="14" ShadowDepth="0" Opacity="0.25"/>
+                    </Border.Effect>
+                    <TextBlock x:Name="IconText"
+                               Text="ℹ"
+                               FontSize="24"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Foreground="#4CAF78"/>
+                </Border>
+
+                <!-- Текст сообщения -->
+                <TextBlock x:Name="MessageText"
+                           Foreground="#A8C4AE"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           MaxWidth="420"
+                           LineHeight="22"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Разделитель над кнопками -->
+            <Rectangle Grid.Row="1" Height="1" VerticalAlignment="Bottom"
+                       Fill="#1E2E21" Margin="0,0,0,0"/>
+
+            <!-- Кнопки — по центру -->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="32,16,32,22">
+
+                <Button x:Name="BtnNo"
+                        Content="Нет"
+                        Visibility="Collapsed"
+                        Width="110" Height="36"
+                        Margin="0,0,10,0"
+                        Cursor="Hand"
+                        Click="BtnNo_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b"
+                                    Background="#5C1A1A"
+                                    BorderBrush="#8B2020"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="14,0">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#7B2424"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#4A1515"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Foreground>
+                        <SolidColorBrush Color="#F5C6C6"/>
+                    </Button.Foreground>
+                    <Button.FontSize>13</Button.FontSize>
+                </Button>
+
+                <Button x:Name="BtnYes"
+                        Content="OK"
+                        Width="110" Height="36"
+                        Cursor="Hand"
+                        Click="BtnYes_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="b"
+                                    Background="#2E7D4F"
+                                    CornerRadius="8"
+                                    Padding="14,0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#4CAF78" BlurRadius="10" ShadowDepth="0" Opacity="0.20"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#38965F"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="b" Property="Background" Value="#246040"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.Foreground>
+                        <SolidColorBrush Color="#E8F5EC"/>
+                    </Button.Foreground>
+                    <Button.FontSize>13</Button.FontSize>
+                    <Button.FontWeight>SemiBold</Button.FontWeight>
+                </Button>
+
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

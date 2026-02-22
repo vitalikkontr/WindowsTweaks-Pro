@@ -9,7 +9,7 @@
 
   <AssemblyName>WindowsTweaks</AssemblyName>
   <RootNamespace>WindowsTweaks</RootNamespace>
-  <Version>2.6</Version>
+  <Version>3.0</Version>
   <Authors>Виталий Николаевич (vitalikkontr)</Authors>
   <Company>WindowsTweaks Pro Edition</Company>
   <Product>WindowsTweaks Pro - Системные твики Windows</Product>
@@ -19,25 +19,19 @@
   <ApplicationIcon>app.ico</ApplicationIcon>
   <PackageProjectUrl>https://github.com/vitalikkontr/WindowsTweaks-Pro</PackageProjectUrl>
   <PackageIcon>app_icon.png</PackageIcon>
-  <AssemblyVersion>2.6</AssemblyVersion>
-  <FileVersion>2.6</FileVersion>
+  <AssemblyVersion>3.0</AssemblyVersion>
+  <FileVersion>3.0</FileVersion>
 </PropertyGroup>
-
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Иконка ICO - для EXE и окна программы -->
-    <Content Include="app.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    
-    <!-- Иконка PNG - для интерфейса (идеальная четкость!) -->
-    <Content Include="app_icon.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <!-- Иконка ICO - встраивается внутрь EXE -->
+    <Resource Include="app.ico" />
+    <!-- Иконка PNG - встраивается внутрь EXE -->
+    <Resource Include="app_icon.png" />
   </ItemGroup>
 
   <ItemGroup>

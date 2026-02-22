@@ -6,130 +6,187 @@
     <Application.Resources>
         <ResourceDictionary>
 
-            <!-- ===== Цветовая схема (Dark Theme) ===== -->
+            <!-- ===== Цветовая палитра (Forest Dark Theme) ===== -->
 
-            <SolidColorBrush x:Key="BackgroundBrush" Color="#1E1E1E"/>
-            <SolidColorBrush x:Key="SurfaceBrush" Color="#252526"/>
+            <!-- Фоны -->
+            <SolidColorBrush x:Key="BackgroundBrush"      Color="#0D1410"/>
+            <SolidColorBrush x:Key="SurfaceBrush"         Color="#121A14"/>
+            <SolidColorBrush x:Key="Surface2Brush"        Color="#182019"/>
+            <SolidColorBrush x:Key="CardBrush"            Color="#1C2820"/>
 
-            <!-- Акцент (можно менять всю тему одним цветом) -->
-            <SolidColorBrush x:Key="PrimaryBrush" Color="#4CAF50"/>
-            <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#43A047"/>
-            <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#388E3C"/>
+            <!-- Акценты зелёного -->
+            <SolidColorBrush x:Key="PrimaryBrush"         Color="#2E7D4F"/>
+            <SolidColorBrush x:Key="PrimaryHoverBrush"    Color="#38965F"/>
+            <SolidColorBrush x:Key="PrimaryPressedBrush"  Color="#246040"/>
+            <SolidColorBrush x:Key="PrimaryGlowBrush"     Color="#1A4D30"/>
+            <SolidColorBrush x:Key="AccentBrush"          Color="#4CAF78"/>
+            <SolidColorBrush x:Key="AccentDimBrush"       Color="#3D8B60"/>
 
             <!-- Текст -->
-            <SolidColorBrush x:Key="TextBrush" Color="#FFFFFF"/>
-            <SolidColorBrush x:Key="SecondaryTextBrush" Color="#B0B0B0"/>
+            <SolidColorBrush x:Key="TextBrush"            Color="#E8F5EC"/>
+            <SolidColorBrush x:Key="TextDimBrush"         Color="#A8C4AE"/>
+            <SolidColorBrush x:Key="SecondaryTextBrush"   Color="#6B9B75"/>
 
             <!-- Границы / Ховер -->
-            <SolidColorBrush x:Key="BorderBrush" Color="#3F3F46"/>
-            <SolidColorBrush x:Key="HoverBrush" Color="#2E4A2E"/>
+            <SolidColorBrush x:Key="BorderBrush"          Color="#243328"/>
+            <SolidColorBrush x:Key="HoverBrush"           Color="#1E3024"/>
+            <SolidColorBrush x:Key="SelectBrush"          Color="#1F3D28"/>
+
+            <!-- Статус -->
+            <SolidColorBrush x:Key="DangerBrush"          Color="#C0392B"/>
+            <SolidColorBrush x:Key="WarningBrush"         Color="#E67E22"/>
+            <SolidColorBrush x:Key="SuccessBrush"         Color="#27AE60"/>
+
+
+            <!-- ===== Тонкая полоса прокрутки (глобально для всего приложения) ===== -->
+
+            <!-- Ползунок -->
+            <Style x:Key="SlimScrollThumb" TargetType="Thumb">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Thumb">
+                            <Border Background="#3A8055"
+                                    CornerRadius="3"
+                                    Margin="1,2"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Глобальный стиль ScrollBar (без x:Key = применяется везде) -->
+            <Style TargetType="ScrollBar">
+                <Setter Property="Width" Value="5"/>
+                <Setter Property="MinWidth" Value="5"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Border Background="#1A251C" CornerRadius="3" Width="5">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Opacity="0" IsHitTestVisible="False"/>
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Opacity="0" IsHitTestVisible="False"/>
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource SlimScrollThumb}"/>
+                                    </Track.Thumb>
+                                </Track>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ScrollViewer -->
+            <Style TargetType="ScrollViewer">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollViewer">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ScrollContentPresenter Grid.Column="0"
+                                                        CanContentScroll="{TemplateBinding CanContentScroll}"/>
+                                <ScrollBar x:Name="PART_VerticalScrollBar"
+                                           Grid.Column="1"
+                                           Value="{TemplateBinding VerticalOffset}"
+                                           Maximum="{TemplateBinding ScrollableHeight}"
+                                           ViewportSize="{TemplateBinding ViewportHeight}"
+                                           Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
 
             <!-- ===== Кнопка ===== -->
 
             <Style x:Key="ModernButton" TargetType="Button">
-
-                <Setter Property="Background"
-                        Value="{StaticResource PrimaryBrush}"/>
-
-                <Setter Property="Foreground"
-                        Value="{StaticResource TextBrush}"/>
-
-                <Setter Property="BorderThickness"
-                        Value="0"/>
-
-                <Setter Property="Padding"
-                        Value="16,9"/>
-
-                <Setter Property="FontSize"
-                        Value="14"/>
-
-                <Setter Property="FontWeight"
-                        Value="SemiBold"/>
-
-                <Setter Property="Cursor"
-                        Value="Hand"/>
-
-                <Setter Property="FocusVisualStyle"
-                        Value="{x:Null}"/>
-
-
+                <Setter Property="Background"       Value="{StaticResource PrimaryBrush}"/>
+                <Setter Property="Foreground"       Value="{StaticResource TextBrush}"/>
+                <Setter Property="BorderThickness"  Value="0"/>
+                <Setter Property="Padding"          Value="16,9"/>
+                <Setter Property="FontSize"         Value="13"/>
+                <Setter Property="FontWeight"       Value="SemiBold"/>
+                <Setter Property="Cursor"           Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Template">
                     <Setter.Value>
-
                         <ControlTemplate TargetType="Button">
-
                             <Border x:Name="border"
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="6"
                                     Padding="{TemplateBinding Padding}">
-
-                                <ContentPresenter
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"/>
-
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
                             </Border>
-
-
                             <ControlTemplate.Triggers>
-
-                                <!-- Наведение -->
-                                <Trigger Property="IsMouseOver"
-                                         Value="True">
-
-                                    <Setter TargetName="border"
-                                            Property="Background"
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background"
                                             Value="{StaticResource PrimaryHoverBrush}"/>
-
                                 </Trigger>
-
-
-                                <!-- Нажатие -->
-                                <Trigger Property="IsPressed"
-                                         Value="True">
-
-                                    <Setter TargetName="border"
-                                            Property="Background"
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background"
                                             Value="{StaticResource PrimaryPressedBrush}"/>
-
                                 </Trigger>
-
-
-                                <!-- Отключена -->
-                                <Trigger Property="IsEnabled"
-                                         Value="False">
-
-                                    <Setter TargetName="border"
-                                            Property="Opacity"
-                                            Value="0.5"/>
-
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.4"/>
                                 </Trigger>
-
                             </ControlTemplate.Triggers>
-
                         </ControlTemplate>
-
                     </Setter.Value>
                 </Setter>
+            </Style>
 
+            <!-- Кнопка опасного действия (красная) -->
+            <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Background" Value="#8B2020"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#A93226"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#7B241C"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
 
 
-            <!-- ===== НОВЫЙ СТИЛЬ CheckBox БЕЗ ЧЕРНЫХ КВАДРАТИКОВ ===== -->
+            <!-- ===== CheckBox ===== -->
 
             <Style x:Key="ModernCheckBox" TargetType="CheckBox">
-                <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="Margin" Value="0,3,0,3"/>
-                <Setter Property="Padding" Value="6,3"/>
+                <Setter Property="Foreground"       Value="{StaticResource TextDimBrush}"/>
+                <Setter Property="FontSize"         Value="13"/>
+                <Setter Property="Cursor"           Value="Hand"/>
+                <Setter Property="Margin"           Value="0,3"/>
+                <Setter Property="Padding"          Value="8,4"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="CheckBox">
                             <Border Background="Transparent"
-                                    BorderThickness="0"
                                     Padding="{TemplateBinding Padding}"
                                     CornerRadius="4">
                                 <Grid>
@@ -137,70 +194,59 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-
-                                    <!-- Кастомный чекбокс -->
                                     <Border x:Name="CheckBoxBorder"
                                             Grid.Column="0"
-                                            Width="20"
-                                            Height="20"
-                                            Background="#2D2D30"
-                                            BorderBrush="#4CAF50"
-                                            BorderThickness="2"
-                                            CornerRadius="4"
+                                            Width="18" Height="18"
+                                            Background="#0D1410"
+                                            BorderBrush="{StaticResource AccentDimBrush}"
+                                            BorderThickness="1.5"
+                                            CornerRadius="3"
                                             VerticalAlignment="Center"
-                                            Margin="0,0,10,0">
-                                        <Grid>
-                                            <!-- Галочка -->
-                                            <Path x:Name="CheckMark"
-                                                  Data="M 0,5 L 4,9 L 10,0"
-                                                  Stroke="#4CAF50"
-                                                  StrokeThickness="2.5"
-                                                  StrokeStartLineCap="Round"
-                                                  StrokeEndLineCap="Round"
-                                                  StrokeLineJoin="Round"
-                                                  Visibility="Collapsed"
-                                                  Margin="3"/>
-                                        </Grid>
+                                            Margin="0,0,9,0">
+                                        <Path x:Name="CheckMark"
+                                              Data="M 0,5 L 4,9 L 10,0"
+                                              Stroke="{StaticResource AccentBrush}"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              StrokeLineJoin="Round"
+                                              Visibility="Collapsed"
+                                              Margin="2"/>
                                     </Border>
-
-                                    <!-- Текст -->
                                     <ContentPresenter Grid.Column="1"
-                                                     VerticalAlignment="Center"
-                                                     HorizontalAlignment="Left"
-                                                     RecognizesAccessKey="True"/>
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      RecognizesAccessKey="True"/>
                                 </Grid>
                             </Border>
-
                             <ControlTemplate.Triggers>
-                                <!-- Отмечен -->
                                 <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="CheckBoxBorder" Property="Background" Value="#388E3C"/>
+                                    <Setter TargetName="CheckMark"       Property="Visibility"   Value="Visible"/>
+                                    <Setter TargetName="CheckBoxBorder"  Property="Background"   Value="#1A3D28"/>
+                                    <Setter TargetName="CheckBoxBorder"  Property="BorderBrush"  Value="{StaticResource AccentBrush}"/>
                                 </Trigger>
-
-                                <!-- Наведение -->
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="#66BB6A"/>
-                                    <Setter TargetName="CheckBoxBorder" Property="Background" Value="#353535"/>
+                                    <Setter TargetName="CheckBoxBorder"  Property="BorderBrush"  Value="{StaticResource AccentBrush}"/>
+                                    <Setter TargetName="CheckBoxBorder"  Property="Background"   Value="#162218"/>
                                 </Trigger>
-
-                                <!-- Наведение + Отмечен -->
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsMouseOver" Value="True"/>
-                                        <Condition Property="IsChecked" Value="True"/>
-                                    </MultiTrigger.Conditions>
-                                    <Setter TargetName="CheckBoxBorder" Property="Background" Value="#43A047"/>
-                                </MultiTrigger>
-
-                                <!-- Отключен -->
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Opacity" Value="0.5"/>
+                                    <Setter Property="Opacity" Value="0.4"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+            </Style>
+
+
+            <!-- ===== Разделитель секций ===== -->
+
+            <Style x:Key="SectionHeader" TargetType="TextBlock">
+                <Setter Property="Foreground"  Value="{StaticResource AccentBrush}"/>
+                <Setter Property="FontSize"    Value="11"/>
+                <Setter Property="FontWeight"  Value="SemiBold"/>
+                <Setter Property="Margin"      Value="0,16,0,8"/>
+                <Setter Property="Opacity"     Value="0.85"/>
             </Style>
 
 

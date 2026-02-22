@@ -18,6 +18,7 @@ namespace WindowsTweaks
         private readonly Dictionary<string, TweakAction> tweakActions;
         private readonly List<string> appliedTweaks;
         private readonly List<string> failedTweaks;
+        private readonly List<string> lastOperationTweaks;
         private readonly string statePath;
 
         public TweakEngine()
@@ -34,6 +35,8 @@ namespace WindowsTweaks
             );
 
             LoadAppliedTweaksState();
+
+            lastOperationTweaks = new List<string>();
 
             // Синхронизируем enabledTweaks с уже применёнными твиками.
             // Без этого при старте enabledTweaks пуст, и кнопка "Отменить"
@@ -84,6 +87,7 @@ namespace WindowsTweaks
         public async Task ApplySelectedTweaksAsync(List<string> tweakKeys)
         {
             failedTweaks.Clear();
+            lastOperationTweaks.Clear();
 
             await Task.Run(() =>
             {
@@ -96,6 +100,7 @@ namespace WindowsTweaks
                             tweakActions[tweakKey].Apply();
                             if (!appliedTweaks.Contains(tweakKey))
                                 appliedTweaks.Add(tweakKey);
+                            lastOperationTweaks.Add(tweakKey);
                             Debug.WriteLine($"✓ Применён твик: {tweakKey}");
                         }
                         catch (UnauthorizedAccessException)
@@ -117,6 +122,7 @@ namespace WindowsTweaks
         public async Task ApplyAllTweaksAsync()
         {
             failedTweaks.Clear();
+            lastOperationTweaks.Clear();
 
             await Task.Run(() =>
             {
@@ -129,6 +135,7 @@ namespace WindowsTweaks
                             tweakActions[tweakKey].Apply();
                             if (!appliedTweaks.Contains(tweakKey))
                                 appliedTweaks.Add(tweakKey);
+                            lastOperationTweaks.Add(tweakKey);
                             Debug.WriteLine($"✓ Успешно применен твик: {tweakKey}");
                         }
                         catch (UnauthorizedAccessException)
@@ -282,31 +289,30 @@ namespace WindowsTweaks
         public string GetApplyResults()
         {
             var result = new System.Text.StringBuilder();
-            result.AppendLine("═══════════════════════════════════════════");
-            result.AppendLine("РЕЗУЛЬТАТЫ ПРИМЕНЕНИЯ ТВИКОВ");
-            result.AppendLine("═══════════════════════════════════════════");
+            result.AppendLine("◆  РЕЗУЛЬТАТЫ ПРИМЕНЕНИЯ ТВИКОВ");
+            result.AppendLine("────────────────────────────────────────────");
             result.AppendLine();
 
-            if (appliedTweaks.Count > 0)
+            if (lastOperationTweaks.Count > 0)
             {
-                result.AppendLine($"✅ Успешно применено: {appliedTweaks.Count}");
-                foreach (var tweak in appliedTweaks)
+                result.AppendLine($"✓  Успешно применено:  {lastOperationTweaks.Count}");
+                foreach (var tweak in lastOperationTweaks)
                 {
                     if (tweakActions.ContainsKey(tweak))
-                        result.AppendLine($"   • {tweakActions[tweak].Description}");
+                        result.AppendLine($"   •  {tweakActions[tweak].Description}");
                 }
                 result.AppendLine();
             }
 
             if (failedTweaks.Count > 0)
             {
-                result.AppendLine($"❌ Ошибки: {failedTweaks.Count}");
+                result.AppendLine($"✗  Ошибок:  {failedTweaks.Count}");
                 foreach (var tweak in failedTweaks)
-                    result.AppendLine($"   • {tweak}");
+                    result.AppendLine($"   •  {tweak}");
                 result.AppendLine();
             }
 
-            result.AppendLine("═══════════════════════════════════════════");
+            result.AppendLine("────────────────────────────────────────────");
             return result.ToString();
         }
 
@@ -330,12 +336,11 @@ namespace WindowsTweaks
             {
                 var psi = new ProcessStartInfo
                 {
-                    FileName = "powershell.exe",
-                    Arguments = $"-Command \"Checkpoint-Computer -Description '{description}' -RestorePointType 'MODIFY_SETTINGS'\"",
-                    Verb = "runas",
+                    FileName        = "powershell.exe",
+                    Arguments       = $"-Command \"Checkpoint-Computer -Description '{description}' -RestorePointType 'MODIFY_SETTINGS'\"",
+                    Verb            = "runas",
                     UseShellExecute = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle     = ProcessWindowStyle.Hidden
                 };
 
                 var process = Process.Start(psi);
@@ -365,12 +370,16 @@ namespace WindowsTweaks
                 ),
 
                 ["DisableSearchIndexing"] = new TweakAction(
-                    "Отключение службы индексирования поиска",
+                    "Отключение индексирования поиска (реестр)",
                     () => {
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "PreventIndexingLowDiskSpaceMB", 1, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "DisableRemovableDriveIndexing", 1, RegistryValueKind.DWord);
                         ExecuteCommand("sc stop WSearch");
                         ExecuteCommand("sc config WSearch start=disabled");
                     },
                     () => {
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "PreventIndexingLowDiskSpaceMB");
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "DisableRemovableDriveIndexing");
                         ExecuteCommand("sc config WSearch start=auto");
                         ExecuteCommand("sc start WSearch");
                     }
@@ -485,8 +494,16 @@ namespace WindowsTweaks
 
                 ["EnableUltimatePowerPlan"] = new TweakAction(
                     "Включение скрытой схемы питания (максимальная производительность)",
-                    () => ExecuteCommand("powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61"),
-                    () => { /* Схема остаётся, пользователь может переключиться вручную */ }
+                    () => {
+                        // Создаём схему и сразу активируем её
+                        ExecuteCommand("powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61");
+                        ExecuteCommand("powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61");
+                    },
+                    () => {
+                        // Возвращаем стандартную схему «Высокая производительность» и удаляем созданную
+                        ExecuteCommand("powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
+                        ExecuteCommand("powercfg -delete e9a42b02-d5df-448d-aa00-03f14749eb61");
+                    }
                 ),
 
                 ["DisableScreenOff"] = new TweakAction(
@@ -659,23 +676,27 @@ namespace WindowsTweaks
                 ["OptimizeTCPIP"] = new TweakAction(
                     "Оптимизация TCP/IP",
                     () => {
+                        // chimney/dca/netdma удалены в Win10 — используем актуальные параметры
                         ExecuteCommand("netsh int tcp set global autotuninglevel=normal");
-                        ExecuteCommand("netsh int tcp set global chimney=enabled");
-                        ExecuteCommand("netsh int tcp set global dca=enabled");
-                        ExecuteCommand("netsh int tcp set global netdma=enabled");
+                        ExecuteCommand("netsh int tcp set global rss=enabled");
+                        ExecuteCommand("netsh int tcp set global rsc=enabled");
+                        ExecuteCommand("netsh int tcp set heuristics disabled");
+                        ExecuteCommand("netsh int tcp set global initialRto=2000");
                     },
                     () => {
                         ExecuteCommand("netsh int tcp set global autotuninglevel=normal");
-                        ExecuteCommand("netsh int tcp set global chimney=disabled");
-                        ExecuteCommand("netsh int tcp set global dca=disabled");
-                        ExecuteCommand("netsh int tcp set global netdma=disabled");
+                        ExecuteCommand("netsh int tcp set global rss=enabled");
+                        ExecuteCommand("netsh int tcp set global rsc=disabled");
+                        ExecuteCommand("netsh int tcp set heuristics enabled");
+                        ExecuteCommand("netsh int tcp set global initialRto=3000");
                     }
                 ),
 
+                // Одноразовые действия — не сохраняют состояние, выполняются немедленно
                 ["FlushDNSCache"] = new TweakAction(
                     "Очистка кэша DNS",
                     () => ExecuteCommand("ipconfig /flushdns"),
-                    () => { }
+                    () => { /* Одноразовое действие — откат не требуется */ }
                 ),
 
                 ["ResetNetworkAdapters"] = new TweakAction(
@@ -683,8 +704,9 @@ namespace WindowsTweaks
                     () => {
                         ExecuteCommand("netsh winsock reset");
                         ExecuteCommand("netsh int ip reset");
+                        // Требует перезагрузки для вступления в силу
                     },
-                    () => { }
+                    () => { /* Одноразовое действие — откат не требуется */ }
                 ),
 
                 ["DisableMeteredConnection"] = new TweakAction(
@@ -714,7 +736,7 @@ namespace WindowsTweaks
                 ["OptimizeMTU"] = new TweakAction(
                     "Оптимизировать MTU для лучшей производительности",
                     () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1500 store=persistent"),
-                    () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1500 store=persistent")
+                    () => ExecuteCommand("netsh interface ipv4 set subinterface \"Ethernet\" mtu=1492 store=persistent")
                 ),
 
                 // ═══════════════════════════════════════════════
@@ -939,9 +961,155 @@ namespace WindowsTweaks
                     }
                 ),
 
-                // НОВЫЙ ТВИК СЛУЖБ — уже частично покрывается DelayedServicesStart
-                // Восстановление запуска командной строки из папки — в секции Администрирование (через реестр)
+                // ═══ НОВЫЕ ТВИКИ: ПРОИЗВОДИТЕЛЬНОСТЬ ═══
 
+                ["EnableHAGS"] = new TweakAction(
+                    "Аппаратное ускорение GPU (HAGS) — для игр",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 1, RegistryValueKind.DWord)
+                ),
+
+                ["DisableHPET"] = new TweakAction(
+                    "Отключение HPET (High Precision Event Timer)",
+                    () => ExecuteCommand("bcdedit /deletevalue useplatformclock"),
+                    () => ExecuteCommand("bcdedit /set useplatformclock true")
+                ),
+
+                ["EnableTRIM"] = new TweakAction(
+                    "Принудительно включить TRIM для SSD",
+                    () => ExecuteCommand("fsutil behavior set disabledeletenotify 0"),
+                    () => ExecuteCommand("fsutil behavior set disabledeletenotify 1")
+                ),
+
+                ["DisableMouseAcceleration"] = new TweakAction(
+                    "Отключить ускорение мыши (линейный ввод)",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Mouse", "MouseSpeed", "0", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Mouse", "MouseThreshold1", "0", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Mouse", "MouseThreshold2", "0", RegistryValueKind.String);
+                    },
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Mouse", "MouseSpeed", "1", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Mouse", "MouseThreshold1", "6", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Mouse", "MouseThreshold2", "10", RegistryValueKind.String);
+                    }
+                ),
+
+                ["SetHighCpuPriority"] = new TweakAction(
+                    "Приоритет CPU для активного приложения (Win32PrioritySeparation)",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", 38, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", 2, RegistryValueKind.DWord)
+                ),
+
+                // ═══ НОВЫЕ ТВИКИ: КОНФИДЕНЦИАЛЬНОСТЬ ═══
+
+                ["DisableBiometrics"] = new TweakAction(
+                    "Отключить службу биометрии Windows (Windows Hello)",
+                    () => {
+                        ExecuteCommand("sc stop WbioSrvc");
+                        ExecuteCommand("sc config WbioSrvc start=disabled");
+                    },
+                    () => {
+                        ExecuteCommand("sc config WbioSrvc start=auto");
+                        ExecuteCommand("sc start WbioSrvc");
+                    }
+                ),
+
+                ["DisableCameraAccess"] = new TweakAction(
+                    "Запретить приложениям доступ к камере",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam", "Value", "Deny", RegistryValueKind.String),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam", "Value", "Allow", RegistryValueKind.String)
+                ),
+
+                ["DisableMicrophoneAccess"] = new TweakAction(
+                    "Запретить приложениям доступ к микрофону",
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone", "Value", "Deny", RegistryValueKind.String),
+                    () => SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone", "Value", "Allow", RegistryValueKind.String)
+                ),
+
+                ["ClearRecentOnExit"] = new TweakAction(
+                    "Очищать историю последних файлов при выходе",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "ClearRecentDocsOnExit", 1, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "NoRecentDocsHistory", 1, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "ClearRecentDocsOnExit");
+                        DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "NoRecentDocsHistory");
+                    }
+                ),
+
+                ["DisableNotificationCenter"] = new TweakAction(
+                    "Отключить Центр уведомлений (Action Center)",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer", "DisableNotificationCenter", 1, RegistryValueKind.DWord),
+                    () => DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Explorer", "DisableNotificationCenter")
+                ),
+
+                // ═══ НОВЫЕ ТВИКИ: СЕТЬ ═══
+
+                ["EnableECN"] = new TweakAction(
+                    "Включить ECN (Explicit Congestion Notification) — снижает потери пакетов",
+                    () => ExecuteCommand("netsh int tcp set global ecncapability=enabled"),
+                    () => ExecuteCommand("netsh int tcp set global ecncapability=disabled")
+                ),
+
+                ["DisableNagle"] = new TweakAction(
+                    "Отключить алгоритм Nagle (снижение пинга в играх)",
+                    () => {
+                        // TcpAckFrequency и TCPNoDelay нужно писать в каждый субключ адаптера.
+                        // Записываем в родительский ключ Parameters — значения наследуются адаптерами.
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", "TcpAckFrequency", 1, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", "TCPNoDelay", 1, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", "TcpAckFrequency");
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", "TCPNoDelay");
+                    }
+                ),
+
+                // ═══ НОВЫЕ ТВИКИ: ВНЕШНИЙ ВИД ═══
+
+                ["DisableWindowAnimations"] = new TweakAction(
+                    "Отключить анимацию открытия/закрытия окон",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics", "MinAnimate", "0", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarAnimations", 0, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics", "MinAnimate", "1", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarAnimations", 1, RegistryValueKind.DWord);
+                    }
+                ),
+
+                ["ShowMenuBar"] = new TweakAction(
+                    "Всегда показывать строку меню в Проводнике",
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "AlwaysShowMenus", 1, RegistryValueKind.DWord),
+                    () => SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "AlwaysShowMenus", 0, RegistryValueKind.DWord)
+                ),
+
+                ["DisableSearchHighlights"] = new TweakAction(
+                    "Отключить динамические обои и подсветку поиска (Win11)",
+                    () => {
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SearchSettings", "IsDynamicSearchBoxEnabled", 0, RegistryValueKind.DWord);
+                        SetRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "EnableDynamicContentInWSB", 0, RegistryValueKind.DWord);
+                    },
+                    () => {
+                        DeleteRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SearchSettings", "IsDynamicSearchBoxEnabled");
+                        DeleteRegistryValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search", "EnableDynamicContentInWSB");
+                    }
+                ),
+
+                ["EnableNumLockOnStartup"] = new TweakAction(
+                    "Включать NumLock при запуске Windows",
+                    () => {
+                        SetRegistryValue(@"HKEY_USERS\.DEFAULT\Control Panel\Keyboard", "InitialKeyboardIndicators", "2", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Keyboard", "InitialKeyboardIndicators", "2", RegistryValueKind.String);
+                    },
+                    () => {
+                        SetRegistryValue(@"HKEY_USERS\.DEFAULT\Control Panel\Keyboard", "InitialKeyboardIndicators", "0", RegistryValueKind.String);
+                        SetRegistryValue(@"HKEY_CURRENT_USER\Control Panel\Keyboard", "InitialKeyboardIndicators", "0", RegistryValueKind.String);
+                    }
+                ),
                 ["RestoreCmdHereContext"] = new TweakAction(
                     "Восстановление запуска командной строки из папки",
                     () => {
@@ -1035,17 +1203,15 @@ namespace WindowsTweaks
         {
             try
             {
+                // UseShellExecute=true нужен для Verb="runas",
+                // но тогда CreateNoWindow не работает — используем WindowStyle.Hidden
                 var psi = new ProcessStartInfo
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c {command}",
-                    UseShellExecute = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    // Важно: запускаем с повышением прав для команд реестра
-                    Verb = command.Contains("reg ") || command.Contains("sc ") || 
-                           command.Contains("powercfg") || command.Contains("netsh") 
-                           ? "runas" : ""
+                    FileName               = "cmd.exe",
+                    Arguments              = $"/c {command}",
+                    UseShellExecute        = true,
+                    WindowStyle            = ProcessWindowStyle.Hidden,
+                    Verb                   = "runas"
                 };
 
                 var process = Process.Start(psi);

@@ -9,18 +9,14 @@ namespace WindowsTweaks
         {
             base.OnStartup(e);
 
-            // Устанавливаем обработчик необработанных исключений
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             DispatcherUnhandledException += OnDispatcherUnhandledException;
 
-            // Показываем приветственное сообщение при первом запуске
             ShowWelcomeMessage();
         }
 
         private void ShowWelcomeMessage()
         {
-            // Проверяем, первый ли это запуск
-            var settings = System.Configuration.ConfigurationManager.AppSettings;
             bool isFirstRun = !System.IO.File.Exists(
                 System.IO.Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -31,24 +27,7 @@ namespace WindowsTweaks
 
             if (isFirstRun)
             {
-                var result = MessageBox.Show(
-                     "╔═══════════════════════════════════════════════════╗\n" +
-                     "║    Добро пожаловать в WindowsTweaks Pro!         ║\n" +
-                     "╚═══════════════════════════════════════════════════╝\n\n" +
-                     "🎯 ВАЖНАЯ ИНФОРМАЦИЯ:\n\n" +
-                     "✅ Программа запускается с правами администратора\n" +
-                     "   для корректной работы всех функций\n\n" +
-                     "⚙️ Все изменения применяются напрямую\n" +
-                     "   к системе Windows\n\n" +
-                     "📋 Рекомендуется создать точку восстановления\n" +
-                     "   перед применением твиков\n\n" +
-                     "👤 Разработчик: Виталий Николаевич (vitalikkontr)\n\n" +
-                     "Показать это сообщение снова?",
-                     "WindowsTweaks Pro - Первый запуск",
-                     MessageBoxButton.YesNo,
-                     MessageBoxImage.Information);
-
-                // Создаём флаг первого запуска
+                // Сначала создаём флаг — независимо от ответа пользователя
                 try
                 {
                     string appDataPath = System.IO.Path.Combine(
@@ -62,6 +41,19 @@ namespace WindowsTweaks
                     );
                 }
                 catch { }
+
+                MessageBox.Show(
+                    "Добро пожаловать в WindowsTweaks Pro!\n\n" +
+                    "ВАЖНАЯ ИНФОРМАЦИЯ:\n\n" +
+                    "✓  Программа запускается с правами администратора\n" +
+                    "   для корректной работы всех функций\n\n" +
+                    "✓  Все изменения применяются напрямую к системе Windows\n\n" +
+                    "✓  Рекомендуется создать точку восстановления\n" +
+                    "   перед применением твиков\n\n" +
+                    "Разработчик: Виталий Николаевич (vitalikkontr)",
+                    "WindowsTweaks Pro — Первый запуск",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
         }
 
@@ -72,7 +64,7 @@ namespace WindowsTweaks
                 LogException(exception);
                 MessageBox.Show(
                     $"Произошла критическая ошибка:\n\n{exception.Message}\n\n" +
-                    "Приложение будет закрыто. Информация об ошибке сохранена в лог-файл.",
+                    "Приложение будет закрыто. Информация сохранена в лог-файл.",
                     "Критическая ошибка",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -84,12 +76,12 @@ namespace WindowsTweaks
             LogException(e.Exception);
             MessageBox.Show(
                 $"Произошла ошибка:\n\n{e.Exception.Message}\n\n" +
-                "Информация об ошибке сохранена в лог-файл.",
+                "Информация сохранена в лог-файл.",
                 "Ошибка",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
 
-            e.Handled = true; // Предотвращаем закрытие приложения
+            e.Handled = true;
         }
 
         private void LogException(Exception exception)
@@ -108,25 +100,21 @@ namespace WindowsTweaks
                     $"error_{DateTime.Now:yyyyMMdd}.log"
                 );
 
-                string logEntry = $"\n{'=' * 60}\n" +
-                                 $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n" +
-                                 $"Ошибка: {exception.Message}\n" +
-                                 $"StackTrace:\n{exception.StackTrace}\n" +
-                                 $"{'=' * 60}\n";
+                string separator = new string('=', 60);
+                string logEntry = $"\n{separator}\n" +
+                                  $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n" +
+                                  $"Ошибка: {exception.Message}\n" +
+                                  $"StackTrace:\n{exception.StackTrace}\n" +
+                                  $"{separator}\n";
 
                 System.IO.File.AppendAllText(logFile, logEntry);
             }
-            catch
-            {
-                // Игнорируем ошибки логирования
-            }
+            catch { }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
-
-            // Очистка ресурсов при выходе (если нужно)
         }
     }
 }

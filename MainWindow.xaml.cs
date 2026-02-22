@@ -27,8 +27,34 @@ namespace WindowsTweaks
             };
 
             InitializeComponent();
+            NavigationList.SelectedIndex = 0;
             LoadPerformanceContent();
         }
+
+        private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                WindowState = WindowState == WindowState.Maximized
+                    ? WindowState.Normal
+                    : WindowState.Maximized;
+            }
+            else
+            {
+                DragMove();
+            }
+        }
+
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+            => WindowState = WindowState.Minimized;
+
+        private void BtnMaximize_Click(object sender, RoutedEventArgs e)
+            => WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+            => Close();
 
         private void NavigationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -63,7 +89,7 @@ namespace WindowsTweaks
             AddTweakCheckbox("Увеличить кэш DNS", "IncreaseDNSCache",
                 "Ускоряет разрешение доменных имён за счёт большего кэша");
             AddTweakCheckbox("Отключить Windows Defender (требует осторожности!)", "DisableDefender",
-                "Полностью отключает встроенный антивирус — только если есть сторонний! перед приминением требуется отключение зашиты в самом антивируснке");
+                "Полностью отключает встроенный антивирус — только если есть сторонний! Перед применением отключите защиту в настройках самого Defender");
             AddTweakCheckbox("Отключить задержку запуска программ при старте", "DisableStartupDelay",
                 "Убирает 10-секундную задержку перед запуском программ автозагрузки");
             AddTweakCheckbox("Отключить фоновые приложения", "DisableBackgroundApps",
@@ -89,6 +115,19 @@ namespace WindowsTweaks
                 "На мощных ПК увеличивает кэш эскизов до 1 ГБ — меньше перезаписей на диск");
             AddTweakCheckbox("Перенести папку Temp в C:\\Temp", "MoveTempFolder",
                 "Переносит папку временных файлов в корень диска C:. Требуется перезагрузка!");
+
+            AddSectionSeparator("🎮 Игровые и системные оптимизации");
+
+            AddTweakCheckbox("Аппаратное ускорение GPU (HAGS)", "EnableHAGS",
+                "Позволяет GPU самостоятельно управлять своей очередью задач — снижает задержку в играх (Win10 2004+, требует актуального драйвера)");
+            AddTweakCheckbox("Отключить HPET (High Precision Event Timer)", "DisableHPET",
+                "На некоторых системах отключение HPET снижает задержку ввода — эффект зависит от железа, рекомендуется проверить в тестах");
+            AddTweakCheckbox("Принудительно включить TRIM для SSD", "EnableTRIM",
+                "TRIM сообщает SSD какие блоки можно очистить — повышает скорость записи и продлевает срок службы накопителя");
+            AddTweakCheckbox("Отключить ускорение мыши (линейный ввод)", "DisableMouseAcceleration",
+                "Убирает 'усиление' курсора при быстром движении — важно для точного прицеливания в играх и графических редакторах");
+            AddTweakCheckbox("Приоритет CPU для активного приложения", "SetHighCpuPriority",
+                "Win32PrioritySeparation=38: активное окно получает максимальный квант времени процессора — быстрее реагирует на ввод");
 
             StatusText.Text = "Производительность: готов к настройке";
         }
@@ -134,6 +173,19 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить автоприглушение звука при микрофоне", "DisableAudioDucking",
                 "Windows автоматически снижает громкость других приложений при работе микрофона — здесь это отключается");
 
+            AddSectionSeparator("🔐 Приватность устройств");
+
+            AddTweakCheckbox("Отключить службу биометрии (Windows Hello)", "DisableBiometrics",
+                "Останавливает WbioSrvc — отпечатки и распознавание лица не работают. Если не используете Windows Hello — безопасно отключить");
+            AddTweakCheckbox("Запретить приложениям доступ к камере", "DisableCameraAccess",
+                "Запрещает всем приложениям (кроме системных) использовать веб-камеру через политику CapabilityAccessManager");
+            AddTweakCheckbox("Запретить приложениям доступ к микрофону", "DisableMicrophoneAccess",
+                "Запрещает всем приложениям (кроме системных) использовать микрофон через политику CapabilityAccessManager");
+            AddTweakCheckbox("Очищать историю последних файлов при выходе", "ClearRecentOnExit",
+                "При каждом выходе из Windows автоматически удаляет список последних открытых документов и папок из меню Пуск и Проводника");
+            AddTweakCheckbox("Отключить Центр уведомлений (Action Center)", "DisableNotificationCenter",
+                "Скрывает иконку и панель уведомлений — уведомления от приложений не накапливаются и не отвлекают");
+
             StatusText.Text = "Конфиденциальность: готов к настройке";
         }
 
@@ -149,7 +201,7 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить IPv6", "DisableIPv6",
                 "Отключает стек IPv6 — полезно если провайдер использует только IPv4");
             AddTweakCheckbox("Оптимизировать TCP/IP", "OptimizeTCPIP",
-                "Включает Chimney Offload, DCA и NetDMA для ускорения сети");
+                "Оптимизирует параметры стека TCP/IP — RSS, RSC, ECN, InitialRto");
             AddTweakCheckbox("Очистить кэш DNS", "FlushDNSCache",
                 "Сбрасывает кэш DNS-резолвера (аналог ipconfig /flushdns)");
             AddTweakCheckbox("Сбросить сетевые адаптеры", "ResetNetworkAdapters",
@@ -163,7 +215,14 @@ namespace WindowsTweaks
             AddTweakCheckbox("Отключить LLMNR (безопасность)", "DisableLLMNR",
                 "Отключает Link-Local Multicast Name Resolution — защита от LLMNR-спуфинга");
             AddTweakCheckbox("Оптимизировать MTU для лучшей производительности", "OptimizeMTU",
-                "Устанавливает MTU=1500 для Ethernet-адаптера");
+                "Устанавливает MTU=1500 для Ethernet-адаптера (откат: 1492)");
+
+            AddSectionSeparator("⚡ Продвинутые сетевые оптимизации");
+
+            AddTweakCheckbox("Включить ECN (Explicit Congestion Notification)", "EnableECN",
+                "ECN позволяет маршрутизаторам сигнализировать о перегрузке без потери пакетов — снижает задержку при нагруженном канале");
+            AddTweakCheckbox("Отключить алгоритм Nagle (снижение пинга в играх)", "DisableNagle",
+                "Nagle объединяет мелкие пакеты для экономии трафика, но добавляет задержку. Отключение снижает пинг в онлайн-играх");
 
             StatusText.Text = "Сеть: готов к настройке";
         }
@@ -183,7 +242,7 @@ namespace WindowsTweaks
                 "Отображает .exe, .txt и другие расширения в Проводнике");
             AddTweakCheckbox("Показывать скрытые файлы", "ShowHiddenFiles",
                 "Делает видимыми системные и скрытые папки/файлы");
-            AddTweakCheckbox("Классический контекстное меню (Win11)", "ClassicContextMenu",
+            AddTweakCheckbox("Классическое контекстное меню (Win11)", "ClassicContextMenu",
                 "Возвращает старое контекстное меню из Windows 10 в Windows 11");
             AddTweakCheckbox("Отключить группировку на панели задач", "DisableTaskbarGrouping",
                 "Каждое окно показывается отдельной кнопкой без группировки");
@@ -206,6 +265,17 @@ namespace WindowsTweaks
                 "По умолчанию Windows снижает качество обоев — этот твик сохраняет их в исходном качестве (JPEG 100%)");
             AddTweakCheckbox("Отключить залипание клавиш", "DisableStickyKeys",
                 "Отключает срабатывание залипания при 5-кратном нажатии Shift и связанные уведомления");
+
+            AddSectionSeparator("🖥️ Анимации и поведение интерфейса");
+
+            AddTweakCheckbox("Отключить анимацию открытия/закрытия окон", "DisableWindowAnimations",
+                "Убирает плавное появление и скрытие окон — интерфейс реагирует мгновенно. Хорошо сочетается с отключением визуальных эффектов");
+            AddTweakCheckbox("Всегда показывать строку меню в Проводнике", "ShowMenuBar",
+                "Возвращает классическую строку меню (Файл, Правка, Вид...) постоянно видимой без нажатия Alt");
+            AddTweakCheckbox("Отключить динамическую подсветку поиска (Win11)", "DisableSearchHighlights",
+                "Убирает анимированные обои и рекламный контент из строки поиска Windows 11 — поиск становится чище и быстрее");
+            AddTweakCheckbox("Включать NumLock при запуске Windows", "EnableNumLockOnStartup",
+                "NumLock будет автоматически активирован после входа в систему — не нужно каждый раз нажимать вручную");
 
             StatusText.Text = "Внешний вид: готов к настройке";
         }
@@ -264,144 +334,52 @@ namespace WindowsTweaks
             {
                 Text = "Быстрый доступ к системным инструментам администрирования Windows",
                 FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(200, 200, 200)),
+                Foreground = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
                 Margin = new Thickness(0, 0, 0, 15),
                 TextWrapping = TextWrapping.Wrap
             };
             ContentPanel.Children.Add(description);
 
-            // НОВЫЙ ТВИК: Восстановление CMD в контекстном меню
             AddSectionSeparator("🖱️ Твики контекстного меню");
             AddTweakCheckbox("Восстановить запуск CMD из папки", "RestoreCmdHereContext",
                 "Возвращает пункт «Открыть окно команд здесь» в контекстное меню папок");
 
-            // Разделитель перед кнопками
-            ContentPanel.Children.Add(new Separator
+            AddThemedSeparator();
+
+            // ─── Секция 1: Этот компьютер ───
+            AddSectionHeader("📋 УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ «ЭТОТ КОМПЬЮТЕР» (ПКМ)");
+
+            ContentPanel.Children.Add(new TextBlock
             {
-                Margin = new Thickness(0, 10, 0, 20),
-                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
-                Height = 1
-            });
-
-            // ═══════════════════════════════════════════════════════════
-            // Стиль для кнопок с эффектом наведения
-            // ═══════════════════════════════════════════════════════════
-            var hoverButtonStyle = new Style(typeof(Button));
-            hoverButtonStyle.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.White));
-            hoverButtonStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
-            hoverButtonStyle.Setters.Add(new Setter(Button.CursorProperty, System.Windows.Input.Cursors.Hand));
-            hoverButtonStyle.Setters.Add(new Setter(Button.FontSizeProperty, 13.0));
-            hoverButtonStyle.Setters.Add(new Setter(Button.FontWeightProperty, FontWeights.SemiBold));
-
-            var hoverTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-            hoverTrigger.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.Black));
-            hoverButtonStyle.Triggers.Add(hoverTrigger);
-
-            // ═══════════════════════════════════════════════════════════
-            // СЕКЦИЯ 1: КОНТЕКСТНОЕ МЕНЮ "ЭТОТ КОМПЬЮТЕР"
-            // ═══════════════════════════════════════════════════════════
-
-            var menuTitle = new TextBlock
-            {
-                Text = "📋 УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"ЭТОТ КОМПЬЮТЕР\" (ПКМ)",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(100, 181, 246)),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            ContentPanel.Children.Add(menuTitle);
-
-            var menuDescription = new TextBlock
-            {
-                Text = "Добавьте системные инструменты в контекстное меню (ПКМ на \"Этот компьютер\"):\n" +
+                Text = "Добавьте системные инструменты в контекстное меню (ПКМ на «Этот компьютер»):\n" +
                        "• Администрирование • Панель управления • Диспетчер устройств\n" +
                        "• Управление дисками • Редактор групповой политики • Программы и компоненты\n" +
                        "• Редактор реестра • Безопасный режим (с подменю) • Службы",
                 FontSize = 12,
-                Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 180)),
-                Margin = new Thickness(0, 0, 0, 10),
+                Foreground = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
+                Margin = new Thickness(0, 0, 0, 12),
                 TextWrapping = TextWrapping.Wrap
-            };
-            ContentPanel.Children.Add(menuDescription);
-
-            var statusPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
-            var statusIcon = new TextBlock
-            {
-                Text = ComputerContextMenu.AreToolsInstalled() ? "✅" : "❌",
-                FontSize = 16,
-                Margin = new Thickness(0, 0, 10, 0)
-            };
-            var statusText = new TextBlock
-            {
-                Text = ComputerContextMenu.AreToolsInstalled()
-                    ? "Статус: Системные инструменты установлены"
-                    : "Статус: Системные инструменты не установлены",
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Foreground = ComputerContextMenu.AreToolsInstalled()
-                    ? new SolidColorBrush(Color.FromRgb(76, 175, 80))
-                    : new SolidColorBrush(Color.FromRgb(244, 67, 54))
-            };
-            statusPanel.Children.Add(statusIcon);
-            statusPanel.Children.Add(statusText);
-            ContentPanel.Children.Add(statusPanel);
-
-            var menuButtonsPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
-
-            var addMenuButton = new Button
-            {
-                Content = "➕ Добавить системные инструменты",
-                Width = 280, Height = 40,
-                Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Style = hoverButtonStyle
-            };
-            addMenuButton.Click += AddContextMenuItems_Click;
-
-            var removeMenuButton = new Button
-            {
-                Content = "🗑️ Удалить системные инструменты",
-                Width = 280, Height = 40,
-                Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-                Style = hoverButtonStyle
-            };
-            removeMenuButton.Click += RemoveContextMenuItems_Click;
-
-            var diagnosticButton = new Button
-            {
-                Content = "🔍 Диагностика меню Этот компьютер",
-                Width = 280, Height = 40,
-                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                Style = hoverButtonStyle
-            };
-            diagnosticButton.Click += DiagnosticContextMenu_Click;
-
-            menuButtonsPanel.Children.Add(addMenuButton);
-            menuButtonsPanel.Children.Add(removeMenuButton);
-            menuButtonsPanel.Children.Add(diagnosticButton);
-            ContentPanel.Children.Add(menuButtonsPanel);
-
-            ContentPanel.Children.Add(new Separator
-            {
-                Margin = new Thickness(0, 10, 0, 20),
-                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
-                Height = 1
             });
 
-            // ═══════════════════════════════════════════════════════════
-            // СЕКЦИЯ 2: КОНТЕКСТНОЕ МЕНЮ РАБОЧЕГО СТОЛА
-            // ═══════════════════════════════════════════════════════════
+            // Статус
+            AddStatusBadge(
+                ComputerContextMenu.AreToolsInstalled(),
+                "Статус: Системные инструменты установлены",
+                "Статус: Системные инструменты не установлены");
 
-            var desktopMenuTitle = new TextBlock
-            {
-                Text = "🖥️ УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ \"РАБОЧЕГО СТОЛА\" (ПКМ)",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            ContentPanel.Children.Add(desktopMenuTitle);
+            // Кнопки
+            var menuButtons = MakeButtonRow();
+            menuButtons.Children.Add(MakeActionButton("+ Добавить системные инструменты",  ButtonKind.Add,      AddContextMenuItems_Click));
+            menuButtons.Children.Add(MakeActionButton("🗑 Удалить системные инструменты",   ButtonKind.Remove,   RemoveContextMenuItems_Click));
+            menuButtons.Children.Add(MakeActionButton("🔍 Диагностика меню Этот компьютер", ButtonKind.Neutral,  DiagnosticContextMenu_Click));
+            ContentPanel.Children.Add(menuButtons);
 
-            var desktopMenuDescription = new TextBlock
+            AddThemedSeparator();
+
+            // ─── Секция 2: Рабочий стол ───
+            AddSectionHeader("🖥 УПРАВЛЕНИЕ КОНТЕКСТНЫМ МЕНЮ «РАБОЧЕГО СТОЛА» (ПКМ)");
+
+            ContentPanel.Children.Add(new TextBlock
             {
                 Text = "Добавьте системные инструменты в контекстное меню рабочего стола (ПКМ на пустом месте):\n\n" +
                        "📋 Основные инструменты:\n" +
@@ -412,103 +390,40 @@ namespace WindowsTweaks
                        "• Персонализация+ (темы, цвета, фон, шрифты и др.)\n" +
                        "• Панель настроек (система, дисплей, звук, питание и др.)",
                 FontSize = 12,
-                Foreground = new SolidColorBrush(Color.FromRgb(180, 180, 180)),
-                Margin = new Thickness(0, 0, 0, 15),
+                Foreground = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
+                Margin = new Thickness(0, 0, 0, 12),
                 TextWrapping = TextWrapping.Wrap,
                 LineHeight = 20
-            };
-            ContentPanel.Children.Add(desktopMenuDescription);
-
-            var desktopStatusPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 15) };
-            var desktopStatusIcon = new TextBlock { FontSize = 16, Margin = new Thickness(0, 0, 10, 0) };
-            var desktopStatusText = new TextBlock { FontSize = 13, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center };
-
-            if (DesktopContextMenu.AreDesktopToolsInstalled())
-            {
-                desktopStatusIcon.Text = "✅";
-                desktopStatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-                desktopStatusText.Text = "Инструменты установлены в контекстное меню рабочего стола";
-                desktopStatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-            }
-            else
-            {
-                desktopStatusIcon.Text = "⭕";
-                desktopStatusIcon.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
-                desktopStatusText.Text = "Инструменты не установлены";
-                desktopStatusText.Foreground = new SolidColorBrush(Color.FromRgb(158, 158, 158));
-            }
-
-            desktopStatusPanel.Children.Add(desktopStatusIcon);
-            desktopStatusPanel.Children.Add(desktopStatusText);
-            ContentPanel.Children.Add(desktopStatusPanel);
-
-            var desktopButtonsPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 20) };
-
-            var addDesktopButton = new Button
-            {
-                Content = "➕ Добавить в меню Рабочего Стола",
-                Width = 280, Height = 40,
-                Background = new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-                Style = hoverButtonStyle
-            };
-            addDesktopButton.Click += AddDesktopContextMenuItems_Click;
-
-            var removeDesktopButton = new Button
-            {
-                Content = "🗑️ Удалить из меню Рабочего Стола",
-                Width = 280, Height = 40,
-                Background = new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-                Style = hoverButtonStyle
-            };
-            removeDesktopButton.Click += RemoveDesktopContextMenuItems_Click;
-
-            var diagnosticDesktopButton = new Button
-            {
-                Content = "🔍 Диагностика меню Рабочего Стола",
-                Width = 280, Height = 40,
-                Background = new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-                Style = hoverButtonStyle
-            };
-            diagnosticDesktopButton.Click += DiagnosticDesktopContextMenu_Click;
-
-            desktopButtonsPanel.Children.Add(addDesktopButton);
-            desktopButtonsPanel.Children.Add(removeDesktopButton);
-            desktopButtonsPanel.Children.Add(diagnosticDesktopButton);
-            ContentPanel.Children.Add(desktopButtonsPanel);
-
-            ContentPanel.Children.Add(new Separator
-            {
-                Margin = new Thickness(0, 20, 0, 20),
-                Background = new SolidColorBrush(Color.FromRgb(60, 60, 60)),
-                Height = 2
             });
 
-            // ═══════════════════════════════════════════════════════════
-            // СЕКЦИЯ 3: БЫСТРЫЙ ЗАПУСК
-            // ═══════════════════════════════════════════════════════════
+            AddStatusBadge(
+                DesktopContextMenu.AreDesktopToolsInstalled(),
+                "Инструменты установлены в контекстное меню рабочего стола",
+                "Инструменты не установлены");
 
-            var quickLaunchTitle = new TextBlock
-            {
-                Text = "🚀 БЫСТРЫЙ ЗАПУСК ИНСТРУМЕНТОВ",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(Color.FromRgb(100, 181, 246)),
-                Margin = new Thickness(0, 0, 0, 15)
-            };
-            ContentPanel.Children.Add(quickLaunchTitle);
+            var desktopButtons = MakeButtonRow();
+            desktopButtons.Children.Add(MakeActionButton("+ Добавить в меню Рабочего Стола",   ButtonKind.Add,     AddDesktopContextMenuItems_Click));
+            desktopButtons.Children.Add(MakeActionButton("🗑 Удалить из меню Рабочего Стола",   ButtonKind.Remove,  RemoveDesktopContextMenuItems_Click));
+            desktopButtons.Children.Add(MakeActionButton("🔍 Диагностика меню Рабочего Стола",  ButtonKind.Neutral, DiagnosticDesktopContextMenu_Click));
+            ContentPanel.Children.Add(desktopButtons);
 
-            AddUtilityButton("🖥️ Администрирование", "Открыть раздел администрирования", OpenAdministration);
-            AddUtilityButton("🛡️ Безопасный режим", "Перезагрузить в безопасном режиме", OpenSafeMode);
-            AddUtilityButton("🔌 Диспетчер устройств", "Управление устройствами", OpenDeviceManager);
-            AddUtilityButton("⚙️ Панель управления", "Классическая панель управления", OpenControlPanel);
-            AddUtilityButton("📦 Программы и компоненты", "Удаление программ", OpenProgramsAndFeatures);
-            AddUtilityButton("📋 Редактор групповой политики", "Открыть gpedit.msc", OpenGroupPolicy);
-            AddUtilityButton("🔧 Службы", "Управление службами Windows", OpenServices);
-            AddUtilityButton("💾 Управление дисками", "Открыть diskmgmt", OpenDiskManagement);
-            AddUtilityButton("👤 Управление компьютером", "Открыть compmgmt.msc", OpenComputerManagement);
-            AddUtilityButton("🌐 Сетевые подключения", "Открыть ncpa.cpl", OpenNetworkConnections);
-            AddUtilityButton("📊 Монитор ресурсов", "Открыть resmon", OpenResourceMonitor);
-            AddUtilityButton("🔍 Просмотр событий", "Открыть eventvwr", OpenEventViewer);
+            AddThemedSeparator();
+
+            // ─── Секция 3: Быстрый запуск ───
+            AddSectionHeader("🚀 БЫСТРЫЙ ЗАПУСК ИНСТРУМЕНТОВ");
+
+            AddUtilityButton("🖥️", "Администрирование", "Открыть раздел администрирования", OpenAdministration);
+            AddUtilityButton("🛡️", "Безопасный режим", "Перезагрузить в безопасном режиме", OpenSafeMode);
+            AddUtilityButton("🔌", "Диспетчер устройств", "Управление устройствами", OpenDeviceManager);
+            AddUtilityButton("⚙️", "Панель управления", "Классическая панель управления", OpenControlPanel);
+            AddUtilityButton("📦", "Программы и компоненты", "Удаление программ", OpenProgramsAndFeatures);
+            AddUtilityButton("📋", "Редактор групповой политики", "Открыть gpedit.msc", OpenGroupPolicy);
+            AddUtilityButton("🔧", "Службы", "Управление службами Windows", OpenServices);
+            AddUtilityButton("💾", "Управление дисками", "Открыть diskmgmt", OpenDiskManagement);
+            AddUtilityButton("👤", "Управление компьютером", "Открыть compmgmt.msc", OpenComputerManagement);
+            AddUtilityButton("🌐", "Сетевые подключения", "Открыть ncpa.cpl", OpenNetworkConnections);
+            AddUtilityButton("📊", "Монитор ресурсов", "Открыть resmon", OpenResourceMonitor);
+            AddUtilityButton("🔍", "Просмотр событий", "Открыть eventvwr", OpenEventViewer);
 
             StatusText.Text = "Администрирование: выберите инструмент";
         }
@@ -522,15 +437,15 @@ namespace WindowsTweaks
             var title = CreateTitle("🛠️ Системные утилиты");
             ContentPanel.Children.Add(title);
 
-            AddUtilityButton("🧹 Очистка диска", "Запустить Disk Cleanup", CleanupDisk);
-            AddUtilityButton("📊 Диспетчер задач", "Открыть Task Manager", OpenTaskManager);
-            AddUtilityButton("🖥️ Системная информация", "Открыть msinfo32", OpenSystemInfo);
-            AddUtilityButton("📁 Редактор реестра", "Открыть regedit", OpenRegistryEditor);
-            AddUtilityButton("⚡ Управление энергопитанием", "Открыть powercfg", OpenPowerConfig);
-            AddUtilityButton("🔧 Службы Windows", "Открыть services.msc", OpenServices);
-            AddUtilityButton("💾 Управление дисками", "Открыть diskmgmt", OpenDiskManagement);
-            AddUtilityButton("🌐 Сетевые подключения", "Открыть ncpa.cpl", OpenNetworkConnections);
-            AddUtilityButton("💿 Резервное копирование драйверов", "Создать резервную копию на Рабочем столе", BackupDrivers);
+            AddUtilityButton("🧹", "Очистка диска",                 "Запустить Disk Cleanup",                     CleanupDisk);
+            AddUtilityButton("📊", "Диспетчер задач",               "Открыть Task Manager",                       OpenTaskManager);
+            AddUtilityButton("🖥️", "Системная информация",          "Открыть msinfo32",                           OpenSystemInfo);
+            AddUtilityButton("📁", "Редактор реестра",              "Открыть regedit",                            OpenRegistryEditor);
+            AddUtilityButton("⚡", "Управление энергопитанием",     "Открыть powercfg",                           OpenPowerConfig);
+            AddUtilityButton("🔧", "Службы Windows",                "Открыть services.msc",                       OpenServices);
+            AddUtilityButton("💾", "Управление дисками",            "Открыть diskmgmt",                           OpenDiskManagement);
+            AddUtilityButton("🌐", "Сетевые подключения",           "Открыть ncpa.cpl",                           OpenNetworkConnections);
+            AddUtilityButton("💿", "Резервное копирование драйверов","Создать резервную копию на Рабочем столе",   BackupDrivers);
 
             StatusText.Text = "Утилиты: выберите действие";
         }
@@ -544,9 +459,9 @@ namespace WindowsTweaks
             return new TextBlock
             {
                 Text = text,
-                FontSize = 24,
+                FontSize = 20,
                 FontWeight = FontWeights.Bold,
-                Foreground = Brushes.White,
+                Foreground = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
                 Margin = new Thickness(0, 0, 0, 20)
             };
         }
@@ -563,7 +478,7 @@ namespace WindowsTweaks
             {
                 Height = 1,
                 Width = 20,
-                Fill = new SolidColorBrush(Color.FromRgb(100, 181, 246)),
+                Fill = new SolidColorBrush(Color.FromRgb(76, 175, 120)),
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 8, 0)
             };
@@ -573,7 +488,7 @@ namespace WindowsTweaks
                 Text = sectionName,
                 FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(100, 181, 246)),
+                Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 120)),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -586,108 +501,300 @@ namespace WindowsTweaks
         {
             bool isApplied = tweakEngine.IsTweakApplied(tweakKey);
 
-            var stackPanel = new StackPanel
+            // Карточка-строка
+            var card = new Border
             {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 3, 0, 3)
+                Background   = new SolidColorBrush(Color.FromRgb(24, 32, 25)),
+                BorderBrush  = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(6),
+                Margin       = new Thickness(0, 3, 0, 3),
+                Padding      = new Thickness(12, 8, 12, 8),
+                Cursor       = System.Windows.Input.Cursors.Hand
             };
 
-            var statusIcon = new TextBlock
-            {
-                Text = isApplied ? "✅" : "⬜",
-                FontSize = 16,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 8, 0),
-                ToolTip = isApplied ? "Твик применён" : "Твик не применён"
-            };
+            // Подсветка при наведении
+            card.MouseEnter += (s, e) =>
+                card.Background = new SolidColorBrush(Color.FromRgb(30, 48, 33));
+            card.MouseLeave += (s, e) =>
+                card.Background = new SolidColorBrush(
+                    card.Tag is bool t && t
+                        ? Color.FromRgb(20, 45, 28)
+                        : Color.FromRgb(24, 32, 25));
+
+            var rowPanel = new StackPanel { Orientation = Orientation.Horizontal };
 
             var checkbox = new CheckBox
             {
-                Content = label,
-                FontSize = 14,
-                Foreground = isApplied ? new SolidColorBrush(Color.FromRgb(76, 175, 80)) : Brushes.White,
-                Tag = tweakKey,
+                Style       = (Style)Application.Current.FindResource("ModernCheckBox"),
+                Content     = label,
+                Tag         = tweakKey,
                 VerticalAlignment = VerticalAlignment.Center,
-                ToolTip = string.IsNullOrEmpty(tooltip) ? null : tooltip
+                ToolTip     = string.IsNullOrEmpty(tooltip) ? null : tooltip
             };
 
             bool isUpdating = false;
 
-            // При установке галочки — только помечаем твик как "нужно применить"
             checkbox.Checked += (s, e) =>
             {
                 if (isUpdating) return;
-
-                // Если твик уже применён — снимаем пометку "к отмене"
                 tweakEngine.EnableTweak(tweakKey);
-
-                // Визуально показываем "ожидает применения" (жёлтый цвет)
-                checkbox.Foreground = new SolidColorBrush(Color.FromRgb(255, 193, 7));
-                statusIcon.Text = "🔲";
-                statusIcon.ToolTip = "Ожидает применения (нажмите «Применить»)";
-
-                StatusText.Text = $"📋 Отмечено для применения: {label}";
+                // Жёлтая рамка — "ожидает применения"
+                card.BorderBrush = new SolidColorBrush(Color.FromRgb(180, 140, 20));
+                card.Background  = new SolidColorBrush(Color.FromRgb(40, 36, 15));
+                card.Tag         = false;
+                StatusText.Text  = $"Отмечено для применения: {label}";
             };
 
-            // При снятии галочки — только помечаем твик как "нужно отменить"
             checkbox.Unchecked += (s, e) =>
             {
                 if (isUpdating) return;
-
                 tweakEngine.DisableTweak(tweakKey);
-
-                // Визуально показываем "ожидает отмены" (красноватый цвет)
-                checkbox.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
-                statusIcon.Text = "🔳";
-                statusIcon.ToolTip = "Ожидает отмены (нажмите «Отменить»)";
-
-                StatusText.Text = $"📋 Отмечено для отмены: {label}";
+                // Красноватая рамка — "ожидает отмены"
+                card.BorderBrush = new SolidColorBrush(Color.FromRgb(160, 50, 45));
+                card.Background  = new SolidColorBrush(Color.FromRgb(38, 22, 22));
+                card.Tag         = false;
+                StatusText.Text  = $"Отмечено для отмены: {label}";
             };
 
             isUpdating = true;
             checkbox.IsChecked = isApplied;
-            // После инициализации — восстановить корректный цвет (без жёлтого/красного)
-            checkbox.Foreground = isApplied ? new SolidColorBrush(Color.FromRgb(76, 175, 80)) : Brushes.White;
-            statusIcon.Text = isApplied ? "✅" : "⬜";
             isUpdating = false;
 
-            stackPanel.Children.Add(statusIcon);
-            stackPanel.Children.Add(checkbox);
+            // Начальный вид: применён → зелёная рамка
+            if (isApplied)
+            {
+                card.BorderBrush = new SolidColorBrush(Color.FromRgb(46, 125, 79));
+                card.Background  = new SolidColorBrush(Color.FromRgb(20, 45, 28));
+                card.Tag         = true;
+            }
 
-            ContentPanel.Children.Add(stackPanel);
+            // Кликабельность по всей карточке
+            card.MouseLeftButtonDown += (s, e) =>
+            {
+                checkbox.IsChecked = !checkbox.IsChecked;
+            };
+
+            rowPanel.Children.Add(checkbox);
+            card.Child = rowPanel;
+            ContentPanel.Children.Add(card);
         }
 
-        private void AddUtilityButton(string icon, string label, Action action)
+        // ═══════════════════════════════════════════════════════
+        // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ UI — ТЕМА
+        // ═══════════════════════════════════════════════════════
+
+        private enum ButtonKind { Add, Remove, Neutral }
+
+        private StackPanel MakeButtonRow() =>
+            new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 14) };
+
+        private Border MakeActionButton(string text, ButtonKind kind, RoutedEventHandler onClick)
         {
-            var button = new Button
+            // Цвета по типу
+            Color bgNormal, bgHover, border;
+            switch (kind)
             {
-                Content = $"{icon} {label}",
-                Height = 45,
-                HorizontalContentAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 5, 0, 5),
-                FontSize = 14,
-                Background = new SolidColorBrush(Color.FromRgb(66, 165, 245)),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = System.Windows.Input.Cursors.Hand,
-                Padding = new Thickness(15, 8, 15, 8)
+                case ButtonKind.Add:
+                    bgNormal = Color.FromRgb(30, 80, 48);
+                    bgHover  = Color.FromRgb(38, 105, 62);
+                    border   = Color.FromRgb(46, 125, 79);
+                    break;
+                case ButtonKind.Remove:
+                    bgNormal = Color.FromRgb(80, 28, 28);
+                    bgHover  = Color.FromRgb(105, 35, 35);
+                    border   = Color.FromRgb(160, 50, 45);
+                    break;
+                default:
+                    bgNormal = Color.FromRgb(24, 38, 42);
+                    bgHover  = Color.FromRgb(30, 50, 56);
+                    border   = Color.FromRgb(40, 85, 95);
+                    break;
+            }
+
+            var card = new Border
+            {
+                Background      = new SolidColorBrush(bgNormal),
+                BorderBrush     = new SolidColorBrush(border),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(7),
+                Padding         = new Thickness(16, 10, 16, 10),
+                Margin          = new Thickness(0, 0, 8, 0),
+                Cursor          = System.Windows.Input.Cursors.Hand,
+                MinWidth        = 200
             };
 
-            button.MouseEnter += (s, e) =>
+            var label = new TextBlock
             {
-                button.Background = new SolidColorBrush(Color.FromRgb(100, 181, 246));
-                button.Foreground = Brushes.Black;
+                Text       = text,
+                Foreground = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
+                FontSize   = 13,
+                FontWeight = FontWeights.SemiBold,
+                TextAlignment = TextAlignment.Center
+            };
+            card.Child = label;
+
+            card.MouseEnter += (s, e) => card.Background = new SolidColorBrush(bgHover);
+            card.MouseLeave += (s, e) => card.Background = new SolidColorBrush(bgNormal);
+
+            // Преобразуем Border в кликабельную кнопку через MouseLeftButtonDown
+            card.MouseLeftButtonDown += (s, e) => onClick?.Invoke(s, e);
+
+            return card;
+        }
+
+        private void AddThemedSeparator()
+        {
+            ContentPanel.Children.Add(new Border
+            {
+                Height          = 1,
+                Background      = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
+                Margin          = new Thickness(0, 14, 0, 18)
+            });
+        }
+
+        private void AddSectionHeader(string text)
+        {
+            ContentPanel.Children.Add(new TextBlock
+            {
+                Text       = text,
+                FontSize   = 13,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 120)),
+                Margin     = new Thickness(0, 10, 0, 10)
+            });
+        }
+
+        private void AddStatusBadge(bool installed, string textOn, string textOff)
+        {
+            var panel = new Border
+            {
+                Background      = installed
+                    ? new SolidColorBrush(Color.FromRgb(18, 42, 26))
+                    : new SolidColorBrush(Color.FromRgb(40, 20, 18)),
+                BorderBrush     = installed
+                    ? new SolidColorBrush(Color.FromRgb(46, 100, 65))
+                    : new SolidColorBrush(Color.FromRgb(120, 40, 38)),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(6),
+                Padding         = new Thickness(12, 7, 12, 7),
+                Margin          = new Thickness(0, 0, 0, 12)
             };
 
-            button.MouseLeave += (s, e) =>
+            var row = new StackPanel { Orientation = Orientation.Horizontal };
+            row.Children.Add(new TextBlock
             {
-                button.Background = new SolidColorBrush(Color.FromRgb(66, 165, 245));
-                button.Foreground = Brushes.White;
+                Text      = installed ? "✓" : "✕",
+                FontSize  = 14,
+                Foreground = installed
+                    ? new SolidColorBrush(Color.FromRgb(76, 175, 120))
+                    : new SolidColorBrush(Color.FromRgb(200, 80, 75)),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin    = new Thickness(0, 0, 8, 0)
+            });
+            row.Children.Add(new TextBlock
+            {
+                Text      = installed ? textOn : textOff,
+                FontSize  = 12,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = installed
+                    ? new SolidColorBrush(Color.FromRgb(76, 175, 120))
+                    : new SolidColorBrush(Color.FromRgb(200, 80, 75)),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            panel.Child = row;
+            ContentPanel.Children.Add(panel);
+        }
+
+        private void AddUtilityButton(string emoji, string name, string description, Action action)
+        {
+            var card = new Border
+            {
+                Background      = new SolidColorBrush(Color.FromRgb(24, 32, 25)),
+                BorderBrush     = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(7),
+                Margin          = new Thickness(0, 4, 0, 4),
+                Padding         = new Thickness(14, 9, 14, 9),
+                Cursor          = System.Windows.Input.Cursors.Hand
             };
 
-            button.Click += (s, e) => action?.Invoke();
+            var outerGrid = new Grid();
+            outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            ContentPanel.Children.Add(button);
+            // Иконка
+            var iconBorder = new Border
+            {
+                Width           = 34,
+                Height          = 34,
+                Background      = new SolidColorBrush(Color.FromRgb(28, 52, 38)),
+                BorderBrush     = new SolidColorBrush(Color.FromRgb(46, 100, 65)),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(6),
+                Margin          = new Thickness(0, 0, 12, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            iconBorder.Child = new TextBlock
+            {
+                Text                = emoji,
+                FontSize            = 15,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment   = VerticalAlignment.Center
+            };
+
+            // Текст
+            var textStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            textStack.Children.Add(new TextBlock
+            {
+                Text       = name,
+                Foreground = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
+                FontSize   = 13,
+                FontWeight = FontWeights.SemiBold
+            });
+            textStack.Children.Add(new TextBlock
+            {
+                Text       = description,
+                Foreground = new SolidColorBrush(Color.FromRgb(107, 155, 117)),
+                FontSize   = 11,
+                Margin     = new Thickness(0, 2, 0, 0)
+            });
+
+            // Стрелка
+            var arrow = new TextBlock
+            {
+                Text                = "›",
+                Foreground          = new SolidColorBrush(Color.FromRgb(61, 120, 85)),
+                FontSize            = 22,
+                VerticalAlignment   = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+
+            Grid.SetColumn(iconBorder, 0);
+            Grid.SetColumn(textStack,  1);
+            Grid.SetColumn(arrow,      2);
+            outerGrid.Children.Add(iconBorder);
+            outerGrid.Children.Add(textStack);
+            outerGrid.Children.Add(arrow);
+            card.Child = outerGrid;
+
+            card.MouseEnter += (s, e) =>
+            {
+                card.Background  = new SolidColorBrush(Color.FromRgb(30, 48, 33));
+                card.BorderBrush = new SolidColorBrush(Color.FromRgb(46, 125, 79));
+                arrow.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 120));
+            };
+            card.MouseLeave += (s, e) =>
+            {
+                card.Background  = new SolidColorBrush(Color.FromRgb(24, 32, 25));
+                card.BorderBrush = new SolidColorBrush(Color.FromRgb(36, 51, 40));
+                arrow.Foreground = new SolidColorBrush(Color.FromRgb(61, 120, 85));
+            };
+            card.MouseLeftButtonDown += (s, e) => action?.Invoke();
+
+            ContentPanel.Children.Add(card);
         }
 
         private async void ApplyChanges_Click(object sender, RoutedEventArgs e)
@@ -697,24 +804,17 @@ namespace WindowsTweaks
 
             if (tweaksToApply.Count == 0)
             {
-                MessageBox.Show(
-                    "Нет твиков для применения.\n\n" +
+                ThemedDialog.Show("Нет твиков для применения.\n\n" +
                     "Поставьте галочки напротив твиков, которые хотите применить,\n" +
                     "затем нажмите эту кнопку.",
-                    "Информация",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    "Информация", DialogIcon.Info, this);
                 return;
             }
 
-            var result = MessageBox.Show(
+            bool result = ThemedDialog.Confirm(
                 $"Будет применено твиков: {tweaksToApply.Count}\n\n" +
-                "Рекомендуется создать точку восстановления перед применением.",
-                "Подтверждение",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "Рекомендуется создать точку восстановления перед применением.", "Подтверждение", DialogIcon.Question, this);
+            if (result)
             {
                 StatusText.Text = $"⏳ Применение {tweaksToApply.Count} твиков...";
 
@@ -723,28 +823,18 @@ namespace WindowsTweaks
                     await tweakEngine.ApplySelectedTweaksAsync(tweaksToApply);
                     StatusText.Text = $"✅ Успешно применено {tweaksToApply.Count} твиков!";
 
-                    MessageBox.Show(
-                        "╔═══════════════════════════════════════════════════╗\n" +
-                        "║   ✅ ИЗМЕНЕНИЯ УСПЕШНО ПРИМЕНЕНЫ!                 ║\n" +
-                        "╚═══════════════════════════════════════════════════╝\n\n" +
-                        $"📋 Применено твиков: {tweaksToApply.Count}\n\n" +
-                        "• Некоторые изменения вступят в силу после\n" +
-                        "  перезагрузки системы\n\n" +
-                        "• Проверьте логи в %AppData%\\WindowsTweaks\\Logs",
-                        "Успешно",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    ThemedDialog.Show(
+                        $"Применено твиков: {tweaksToApply.Count}\n\n" +
+                        "Некоторые изменения вступят в силу\n" +
+                        "после перезагрузки системы.", "Изменения применены", DialogIcon.Success, this);
 
                     RefreshAllCheckboxes();
                 }
                 catch (Exception ex)
                 {
                     StatusText.Text = "❌ Ошибка при применении изменений";
-                    MessageBox.Show(
-                        $"Произошла ошибка:\n{ex.Message}",
-                        "Ошибка",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                    ThemedDialog.Show(
+                        $"Произошла ошибка:\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
                 }
             }
         }
@@ -758,79 +848,59 @@ namespace WindowsTweaks
                 tweakEngine.CreateRestorePoint("WindowsTweaks - Перед изменениями");
                 StatusText.Text = "Точка восстановления создана";
 
-                MessageBox.Show(
-                    "Точка восстановления системы успешно создана!",
-                    "Успешно",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                ThemedDialog.Show(
+                    "Точка восстановления системы успешно создана!", "Успешно", DialogIcon.Info, this);
             }
             catch (Exception ex)
             {
                 StatusText.Text = "Ошибка создания точки восстановления";
-                MessageBox.Show(
-                    $"Не удалось создать точку восстановления:\n{ex.Message}",
-                    "Ошибка",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ThemedDialog.Show(
+                    $"Не удалось создать точку восстановления:\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
             }
         }
 
         private void HelpButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(
-                "╔═════════════════════════════════════════════╗\n" +
-                "║       СПРАВКА - WindowsTweaks Pro           ║\n" +
-                "╚═════════════════════════════════════════════╝\n\n" +
-                "📋 ИНСТРУКЦИЯ ПО ИСПОЛЬЗОВАНИЮ:\n\n" +
-                "1️⃣ Выберите категорию настроек в левом меню\n" +
+            ThemedDialog.Show(
+                "ИНСТРУКЦИЯ ПО ИСПОЛЬЗОВАНИЮ:\n\n" +
+                "1. Выберите категорию настроек в левом меню\n" +
                 "   (Производительность, Конфиденциальность и т.д.)\n\n" +
-                "2️⃣ Отметьте нужные твики галочками\n" +
-                "   Твик применяется СРАЗУ при установке галочки!\n\n" +
-                "3️⃣ Для отмены — просто снимите галочку\n\n" +
-                "⚠️ ВАЖНЫЕ РЕКОМЕНДАЦИИ:\n\n" +
-                "• Создавайте точку восстановления системы\n" +
-                "  перед применением изменений!\n\n" +
-                "• Некоторые изменения требуют перезагрузки\n\n" +
-                "• Твики с ⚠️ в названии требуют осторожности\n\n" +
-                "🎯 ДОБАВЛЕНИЕ ПУНКТОВ В МЕНЮ:\n\n" +
-                "Раздел 'Администрирование' позволяет добавить\n" +
-                "системные утилиты в контекстные меню:\n" +
-                "• \"Этот компьютер\" (ПКМ)\n" +
-                "• Рабочий стол (ПКМ на пустом месте)\n\n" +
-                "👤 Разработчик: Виталий Николаевич (vitalikkontr)",
-                "Справка - WindowsTweaks Pro",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "2. Отметьте нужные твики галочками\n" +
+                "   Ожидайте применения через кнопку «Применить»\n\n" +
+                "3. Для отмены — снимите галочку и нажмите «Отменить»\n\n" +
+                "⚠ ВАЖНЫЕ РЕКОМЕНДАЦИИ:\n\n" +
+                "• Создавайте точку восстановления перед изменениями!\n" +
+                "• Некоторые изменения требуют перезагрузки\n" +
+                "• Твики с ⚠ в названии требуют осторожности\n\n" +
+                "Раздел «Администрирование» позволяет добавить системные\n" +
+                "утилиты в контекстные меню «Этот компьютер» и Рабочего стола.\n\n" +
+                "Разработчик: Виталий Николаевич (vitalikkontr)",
+                "Справка — WindowsTweaks Pro",
+                DialogIcon.Info, this);
         }
 
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(
-                "╔═════════════════════════════════════════════╗\n" +
-                "║   WindowsTweaks Pro Edition v2.6            ║\n" +
-                "╚═════════════════════════════════════════════╝\n\n" +
-                "🎯 Профессиональный инструмент для оптимизации\n" +
-                "   и настройки операционной системы Windows\n\n" +
-                "✨ ОСНОВНЫЕ ВОЗМОЖНОСТИ:\n" +
-                "   • 48 твиков для оптимизации системы\n" +
-                "   • Оптимизация производительности и питания\n" +
-                "   • Настройка конфиденциальности\n" +
-                "   • Управление службами Windows\n" +
-                "   • Мгновенное применение и отмена твиков\n" +
-                "   • Контекстное меню \"Этот компьютер\"\n" +
-                "   • Контекстное меню рабочего стола\n\n" +
-                "🆕 НОВОЕ В v2.6:\n" +
-                "   • +13 новых твиков (питание, звук, сжатие обоев)\n" +
-                "   • Отложенный запуск служб\n" +
-                "   • Восстановление CMD в контекстном меню\n" +
-                "   • Подсказки для каждого твика\n\n" +
-                "👤 Разработчик:\n" +
-                "   Виталий Николаевич (vitalikkontr)\n\n" +
-                "📅 Версия: 2.6 (18.02.2026)\n\n" +
-                "© 2026 WindowsTweaks Pro Edition",
+            ThemedDialog.Show(
+                "WindowsTweaks Pro Edition v3.0\n\n" +
+                "Профессиональный инструмент для оптимизации\n" +
+                "и настройки операционной системы Windows.\n\n" +
+                "ОСНОВНЫЕ ВОЗМОЖНОСТИ:\n" +
+                "• 80+ твиков для оптимизации системы\n" +
+                "• Оптимизация производительности и питания\n" +
+                "• Настройка конфиденциальности\n" +
+                "• Управление службами Windows\n" +
+                "• Мгновенное применение и отмена твиков\n" +
+                "• Контекстные меню «Этот компьютер» и Рабочего стола\n\n" +
+                "НОВОЕ В v3.0:\n" +
+                "• +16 новых твиков (игры, приватность, сеть, UI)\n" +
+                "• Отложенный запуск служб\n" +
+                "• Восстановление CMD в контекстном меню\n" +
+                "• Подсказки для каждого твика\n\n" +
+                "Разработчик: Виталий Николаевич (vitalikkontr)\n" +
+                "Версия: 3.0  |  21.02.2026  |  © 2026 WindowsTweaks Pro",
                 "О программе WindowsTweaks Pro",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                DialogIcon.Info, this);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -885,28 +955,22 @@ namespace WindowsTweaks
                             if (process.ExitCode == 0)
                             {
                                 StatusText.Text = $"✅ Драйверы скопированы на Рабочий стол в папку DriverBackup";
-                                MessageBox.Show(
+                                ThemedDialog.Show(
                                     $"Резервное копирование драйверов завершено!\n\n" +
                                     $"Папка: {backupFolder}\n\n" +
                                     $"Для восстановления драйверов запустите:\n" +
-                                    $"Install-all-drivers.bat",
-                                    "Успешно",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
+                                    $"Install-all-drivers.bat", "Успешно", DialogIcon.Info, this);
 
                                 System.Diagnostics.Process.Start("explorer.exe", backupFolder);
                             }
                             else
                             {
                                 StatusText.Text = "❌ Ошибка при создании резервной копии драйверов";
-                                MessageBox.Show(
+                                ThemedDialog.Show(
                                     "Не удалось создать резервную копию драйверов.\n\n" +
                                     "Убедитесь что:\n" +
                                     "• Вы запустили программу с правами администратора\n" +
-                                    "• Достаточно места на диске",
-                                    "Ошибка",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
+                                    "• Достаточно места на диске", "Ошибка", DialogIcon.Error, this);
                             }
                         });
                     });
@@ -915,16 +979,13 @@ namespace WindowsTweaks
             catch (System.ComponentModel.Win32Exception)
             {
                 StatusText.Text = "❌ Требуются права администратора для резервного копирования драйверов";
-                MessageBox.Show(
-                    "Для резервного копирования драйверов требуются права администратора.\n\nПодтвердите запрос UAC.",
-                    "Требуются права администратора",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                ThemedDialog.Show(
+                    "Для резервного копирования драйверов требуются права администратора.\n\nПодтвердите запрос UAC.", "Требуются права администратора", DialogIcon.Warning, this);
             }
             catch (Exception ex)
             {
                 StatusText.Text = "❌ Ошибка при резервном копировании драйверов";
-                MessageBox.Show($"Произошла ошибка:\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemedDialog.Show($"Произошла ошибка:\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
             }
         }
 
@@ -944,7 +1005,7 @@ namespace WindowsTweaks
             catch (Exception ex)
             {
                 StatusText.Text = $"❌ Ошибка запуска: {fileName}";
-                MessageBox.Show($"Не удалось открыть: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemedDialog.Show($"Не удалось открыть: {ex.Message}", "Ошибка", DialogIcon.Error, this);
             }
         }
 
@@ -964,7 +1025,7 @@ namespace WindowsTweaks
             catch (Exception ex)
             {
                 StatusText.Text = $"❌ Ошибка запуска: {snapin}";
-                MessageBox.Show($"Не удалось открыть: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemedDialog.Show($"Не удалось открыть: {ex.Message}", "Ошибка", DialogIcon.Error, this);
             }
         }
 
@@ -976,14 +1037,10 @@ namespace WindowsTweaks
 
         private void OpenSafeMode()
         {
-            var result = MessageBox.Show(
-                "Вы хотите перезагрузить компьютер в безопасном режиме?\n\n" +
+            bool result = ThemedDialog.Confirm("Вы хотите перезагрузить компьютер в безопасном режиме?\n\n" +
                 "Компьютер будет перезагружен, и при следующем запуске откроется меню выбора режима загрузки.",
-                "Безопасный режим",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "Безопасный режим", DialogIcon.Question, this);
+            if (result)
             {
                 try
                 {
@@ -992,14 +1049,13 @@ namespace WindowsTweaks
                         FileName = "shutdown",
                         Arguments = "/r /o /f /t 0",
                         Verb = "runas",
-                        UseShellExecute = true,
-                        CreateNoWindow = true
+                        UseShellExecute = true
                     };
                     System.Diagnostics.Process.Start(psi);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Не удалось перезагрузить: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemedDialog.Show($"Не удалось перезагрузить: {ex.Message}", "Ошибка", DialogIcon.Error, this);
                 }
             }
         }
@@ -1013,12 +1069,9 @@ namespace WindowsTweaks
             try { StartMmc("gpedit.msc"); }
             catch
             {
-                MessageBox.Show(
-                    "Редактор групповой политики недоступен в данной версии Windows.\n\n" +
+                ThemedDialog.Show("Редактор групповой политики недоступен в данной версии Windows.\n\n" +
                     "Он доступен только в Pro, Enterprise и Education версиях Windows.",
-                    "Недоступно",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    "Недоступно", DialogIcon.Info, this);
             }
         }
 
@@ -1032,55 +1085,47 @@ namespace WindowsTweaks
 
         private void AddContextMenuItems_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            bool result = ThemedDialog.Confirm(
                 "Добавить системные инструменты в контекстное меню \"Этот компьютер\"?\n\n" +
                 "Будут добавлены следующие пункты:\n" +
                 "• Администрирование\n• Панель управления\n• Диспетчер устройств\n" +
                 "• Управление дисками\n• Редактор групповой политики\n• Программы и компоненты\n" +
-                "• Редактор реестра\n• Безопасный режим (с подменю)\n• Службы",
-                "Добавление системных инструментов",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "• Редактор реестра\n• Безопасный режим (с подменю)\n• Службы", "Добавление системных инструментов", DialogIcon.Question, this);
+            if (result)
             {
                 try
                 {
                     StatusText.Text = "Добавление пунктов в контекстное меню...";
                     string addResult = ComputerContextMenu.AddSystemTools();
-                    MessageBox.Show(addResult, "Результат добавления", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemedDialog.Show(addResult, "Результат добавления", DialogIcon.Info, this);
                     LoadAdministrationContent();
                 }
                 catch (Exception ex)
                 {
                     StatusText.Text = "❌ Ошибка добавления пунктов меню";
-                    MessageBox.Show($"Не удалось добавить пункты в контекстное меню:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemedDialog.Show($"Не удалось добавить пункты в контекстное меню:\n\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
                 }
             }
         }
 
         private void RemoveContextMenuItems_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "Удалить системные инструменты из контекстного меню \"Этот компьютер\"?\n\n" +
+            bool result = ThemedDialog.Confirm("Удалить системные инструменты из контекстного меню \"Этот компьютер\"?\n\n" +
                 "Это действие можно отменить, снова добавив пункты через эту программу.",
-                "Удаление системных инструментов",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "Удаление системных инструментов", DialogIcon.Question, this);
+            if (result)
             {
                 try
                 {
                     StatusText.Text = "Удаление пунктов из контекстного меню...";
                     string removeResult = ComputerContextMenu.RemoveSystemTools();
-                    MessageBox.Show(removeResult, "Результат удаления", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemedDialog.Show(removeResult, "Результат удаления", DialogIcon.Info, this);
                     LoadAdministrationContent();
                 }
                 catch (Exception ex)
                 {
                     StatusText.Text = "❌ Ошибка удаления пунктов меню";
-                    MessageBox.Show($"Не удалось удалить пункты из контекстного меню:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemedDialog.Show($"Не удалось удалить пункты из контекстного меню:\n\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
                 }
             }
         }
@@ -1094,7 +1139,7 @@ namespace WindowsTweaks
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка диагностики:\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemedDialog.Show($"Ошибка диагностики:\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
             }
         }
 
@@ -1104,58 +1149,50 @@ namespace WindowsTweaks
 
         private void AddDesktopContextMenuItems_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            bool result = ThemedDialog.Confirm(
                 "Добавить системные инструменты в контекстное меню рабочего стола?\n\n" +
                 "📋 БУДУТ ДОБАВЛЕНЫ:\n\nОсновные инструменты:\n" +
                 "• Администрирование\n• Указатели мыши\n• Свойства папки\n" +
                 "• Сетевые подключения\n• Программы и компоненты\n" +
                 "• Редактор реестра\n• Диспетчер задач\n\n" +
-                "Подменю:\n• Персонализация+\n• Панель настроек",
-                "Добавление в контекстное меню рабочего стола",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "Подменю:\n• Персонализация+\n• Панель настроек", "Добавление в контекстное меню рабочего стола", DialogIcon.Question, this);
+            if (result)
             {
                 try
                 {
                     StatusText.Text = "Добавление пунктов в контекстное меню рабочего стола...";
                     string addResult = DesktopContextMenu.AddDesktopTools();
-                    MessageBox.Show(addResult, "Результат добавления", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemedDialog.Show(addResult, "Результат добавления", DialogIcon.Info, this);
                     LoadAdministrationContent();
                     StatusText.Text = "✅ Инструменты успешно добавлены в меню рабочего стола";
                 }
                 catch (Exception ex)
                 {
                     StatusText.Text = "❌ Ошибка добавления пунктов в меню";
-                    MessageBox.Show($"Не удалось добавить пункты:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemedDialog.Show($"Не удалось добавить пункты:\n\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
                 }
             }
         }
 
         private void RemoveDesktopContextMenuItems_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "Удалить системные инструменты из контекстного меню рабочего стола?\n\n" +
+            bool result = ThemedDialog.Confirm("Удалить системные инструменты из контекстного меню рабочего стола?\n\n" +
                 "Это действие можно отменить, снова добавив пункты через эту программу.",
-                "Удаление из контекстного меню",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "Удаление из контекстного меню", DialogIcon.Question, this);
+            if (result)
             {
                 try
                 {
                     StatusText.Text = "Удаление пунктов из контекстного меню рабочего стола...";
                     string removeResult = DesktopContextMenu.RemoveDesktopTools();
-                    MessageBox.Show(removeResult, "Результат удаления", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ThemedDialog.Show(removeResult, "Результат удаления", DialogIcon.Info, this);
                     LoadAdministrationContent();
                     StatusText.Text = "✅ Инструменты успешно удалены из меню рабочего стола";
                 }
                 catch (Exception ex)
                 {
                     StatusText.Text = "❌ Ошибка удаления пунктов из меню";
-                    MessageBox.Show($"Не удалось удалить пункты:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ThemedDialog.Show($"Не удалось удалить пункты:\n\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
                 }
             }
         }
@@ -1170,40 +1207,180 @@ namespace WindowsTweaks
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка диагностики:\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ThemedDialog.Show($"Ошибка диагностики:\n{ex.Message}", "Ошибка", DialogIcon.Error, this);
             }
         }
 
         private void ShowDiagnosticWindow(string title, string content)
         {
-            var diagnosticWindow = new Window
+            var win = new Window
             {
-                Title = title,
-                Width = 700,
-                Height = 600,
+                Title                 = title,
+                Width                 = 680,
+                Height                = 580,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this,
-                Background = new SolidColorBrush(Color.FromRgb(30, 30, 30))
+                Owner                 = this,
+                WindowStyle           = WindowStyle.None,
+                AllowsTransparency    = true,
+                Background            = Brushes.Transparent,
+                ResizeMode            = ResizeMode.CanResizeWithGrip
             };
 
-            var scrollViewer = new ScrollViewer
+            // Внешний контейнер с тенью и скруглением
+            var root = new Border
             {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Padding = new Thickness(20)
+                Background      = new SolidColorBrush(Color.FromRgb(18, 26, 20)),
+                BorderBrush     = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(12)
             };
-
-            var textBlock = new TextBlock
+            root.Effect = new System.Windows.Media.Effects.DropShadowEffect
             {
-                Text = content,
-                Foreground = Brushes.White,
-                FontFamily = new FontFamily("Consolas"),
-                FontSize = 12,
-                TextWrapping = TextWrapping.Wrap
+                Color       = Colors.Black,
+                BlurRadius  = 32,
+                ShadowDepth = 0,
+                Opacity     = 0.80
             };
 
-            scrollViewer.Content = textBlock;
-            diagnosticWindow.Content = scrollViewer;
-            diagnosticWindow.ShowDialog();
+            var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            // ── Шапка ──
+            var header = new Border
+            {
+                Background      = new SolidColorBrush(Color.FromRgb(24, 32, 25)),
+                BorderBrush     = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                CornerRadius    = new CornerRadius(12, 12, 0, 0),
+                Padding         = new Thickness(16, 12, 12, 12)
+            };
+            header.MouseLeftButtonDown += (s, e) => win.DragMove();
+
+            var headerRow = new Grid();
+            headerRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            headerRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(28) });
+
+            var titleText = new TextBlock
+            {
+                Text                = title,
+                Foreground          = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
+                FontSize            = 13,
+                FontWeight          = FontWeights.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment   = VerticalAlignment.Center
+            };
+            Grid.SetColumn(titleText, 0);
+
+            var closeBtn = new Border
+            {
+                Width             = 28,
+                Height            = 28,
+                Background        = Brushes.Transparent,
+                CornerRadius      = new CornerRadius(5),
+                Cursor            = System.Windows.Input.Cursors.Hand,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            var closeTxt = new TextBlock
+            {
+                Text                = "✕",
+                Foreground          = new SolidColorBrush(Color.FromRgb(107, 155, 117)),
+                FontSize            = 13,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment   = VerticalAlignment.Center
+            };
+            closeBtn.Child = closeTxt;
+            closeBtn.MouseEnter += (s, e) => closeBtn.Background = new SolidColorBrush(Color.FromRgb(139, 32, 32));
+            closeBtn.MouseLeave += (s, e) => closeBtn.Background = Brushes.Transparent;
+            closeBtn.MouseLeftButtonDown += (s, e) => win.Close();
+            Grid.SetColumn(closeBtn, 1);
+
+            headerRow.Children.Add(titleText);
+            headerRow.Children.Add(closeBtn);
+            header.Child = headerRow;
+            Grid.SetRow(header, 0);
+
+            // ── Контент ──
+            var scroll = new ScrollViewer
+            {
+                VerticalScrollBarVisibility   = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                HorizontalContentAlignment    = HorizontalAlignment.Stretch
+            };
+
+            var outerPad = new Border
+            {
+                Padding    = new Thickness(48, 24, 48, 24),
+                Background = Brushes.Transparent
+            };
+
+            var text = new TextBlock
+            {
+                Text          = content,
+                Foreground    = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
+                FontFamily    = new FontFamily("Consolas"),
+                FontSize      = 12,
+                LineHeight    = 24,
+                TextWrapping  = TextWrapping.Wrap,
+                TextAlignment = TextAlignment.Left
+            };
+
+            outerPad.Child = text;
+            scroll.Content = outerPad;
+            Grid.SetRow(scroll, 1);
+
+            // ── Нижняя кнопка ──
+            var footer = new Border
+            {
+                Background      = new SolidColorBrush(Color.FromRgb(24, 32, 25)),
+                BorderBrush     = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
+                BorderThickness = new Thickness(0, 1, 0, 0),
+                CornerRadius    = new CornerRadius(0, 0, 12, 12),
+                Padding         = new Thickness(16, 12, 16, 14)
+            };
+
+            var okBtn = new Border
+            {
+                Background      = new SolidColorBrush(Color.FromRgb(30, 80, 48)),
+                BorderBrush     = new SolidColorBrush(Color.FromRgb(46, 125, 79)),
+                BorderThickness = new Thickness(1),
+                CornerRadius    = new CornerRadius(8),
+                Padding         = new Thickness(36, 9, 36, 9),
+                Cursor          = System.Windows.Input.Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Center  // ← по центру
+            };
+            okBtn.Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color       = Color.FromRgb(76, 175, 120),
+                BlurRadius  = 10,
+                ShadowDepth = 0,
+                Opacity     = 0.20
+            };
+            var okTxt = new TextBlock
+            {
+                Text                = "Закрыть",
+                Foreground          = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
+                FontSize            = 13,
+                FontWeight          = FontWeights.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment   = VerticalAlignment.Center
+            };
+            okBtn.Child = okTxt;
+            okBtn.MouseEnter += (s, e) => okBtn.Background = new SolidColorBrush(Color.FromRgb(38, 105, 62));
+            okBtn.MouseLeave += (s, e) => okBtn.Background = new SolidColorBrush(Color.FromRgb(30, 80, 48));
+            okBtn.MouseLeftButtonDown += (s, e) => win.Close();
+
+            footer.Child = okBtn;
+            Grid.SetRow(footer, 2);
+
+            grid.Children.Add(header);
+            grid.Children.Add(scroll);
+            grid.Children.Add(footer);
+            root.Child = grid;
+            win.Content = root;
+            win.ShowDialog();
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -1223,26 +1400,19 @@ namespace WindowsTweaks
 
             if (tweaksToRevert.Count == 0)
             {
-                MessageBox.Show(
-                    "Нет твиков для отмены.\n\n" +
+                ThemedDialog.Show("Нет твиков для отмены.\n\n" +
                     "Снимите галочки с тех твиков, которые хотите отменить,\n" +
                     "затем нажмите эту кнопку.",
-                    "Информация",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    "Информация", DialogIcon.Info, this);
                 return;
             }
 
-            var result = MessageBox.Show(
-                $"⚠️ Будет отменено твиков: {tweaksToRevert.Count}\n\n" +
+            bool result = ThemedDialog.Confirm($"⚠️ Будет отменено твиков: {tweaksToRevert.Count}\n\n" +
                 "Отменяются только те твики, с которых СНЯТЫ галочки.\n" +
                 "Твики с установленными галочками останутся активными.\n\n" +
                 "⚠️ ВНИМАНИЕ: Некоторые изменения могут потребовать перезагрузки!",
-                "Подтверждение отмены твиков",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+                "Подтверждение отмены твиков", DialogIcon.Question, this);
+            if (result)
             {
                 StatusText.Text = $"⏳ Отмена {tweaksToRevert.Count} твиков...";
 
@@ -1252,38 +1422,21 @@ namespace WindowsTweaks
 
                     StatusText.Text = $"✅ Успешно отменено {tweaksToRevert.Count} твиков!";
 
-                    MessageBox.Show(
-                        "╔═══════════════════════════════════════════════════╗\n" +
-                        "║   ✅ ВЫБРАННЫЕ ТВИКИ УСПЕШНО ОТМЕНЕНЫ!            ║\n" +
-                        "╚═══════════════════════════════════════════════════╝\n\n" +
-                        $"🔄 Отменено твиков: {tweaksToRevert.Count}\n\n" +
-                        "📋 Что было сделано:\n" +
-                        "   • Отменены только снятые вами твики\n" +
-                        "   • Твики с галочками остались активными\n" +
-                        "   • Восстановлены настройки реестра\n\n" +
-                        "⚠️ ВАЖНО:\n" +
-                        "   Некоторые изменения вступят в силу после\n" +
-                        "   перезагрузки системы.",
-                        "Отмена твиков завершена",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    ThemedDialog.Show(
+                        $"Отменено твиков: {tweaksToRevert.Count}\n\n" +
+                        "Отменены только снятые вами твики.\n" +
+                        "Некоторые изменения вступят в силу\n" +
+                        "после перезагрузки системы.", "Твики отменены", DialogIcon.Success, this);
 
                     RefreshAllCheckboxes();
                 }
                 catch (Exception ex)
                 {
                     StatusText.Text = "❌ Ошибка при отмене твиков";
-                    MessageBox.Show(
-                        "╔═══════════════════════════════════════════════════╗\n" +
-                        "║   ❌ ОШИБКА ПРИ ОТМЕНЕ ТВИКОВ                     ║\n" +
-                        "╚═══════════════════════════════════════════════════╝\n\n" +
-                        $"Описание ошибки:\n{ex.Message}\n\n" +
-                        "💡 Попробуйте:\n" +
-                        "   • Запустить программу от имени администратора\n" +
-                        "   • Проверить логи в папке AppData\\WindowsTweaks\\Logs",
-                        "Ошибка",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                    ThemedDialog.Show(
+                        $"{ex.Message}\n\n" +
+                        "Попробуйте запустить программу\n" +
+                        "от имени администратора.", "Ошибка при отмене", DialogIcon.Error, this);
                 }
             }
         }
