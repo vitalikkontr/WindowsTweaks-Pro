@@ -294,7 +294,7 @@ namespace WindowsTweaks
                 Text = "⚠️ Внимание! Отключение служб может нарушить работу системы.",
                 FontSize = 12,
                 Foreground = new SolidColorBrush(Color.FromRgb(255, 165, 0)),
-                Margin = new Thickness(0, 0, 0, 15),
+                Margin = new Thickness(0, 0, 0, 10),
                 TextWrapping = TextWrapping.Wrap
             };
             ContentPanel.Children.Add(warning);
@@ -333,9 +333,9 @@ namespace WindowsTweaks
             var description = new TextBlock
             {
                 Text = "Быстрый доступ к системным инструментам администрирования Windows",
-                FontSize = 13,
+                FontSize = 11,
                 Foreground = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
-                Margin = new Thickness(0, 0, 0, 15),
+                Margin = new Thickness(0, 0, 0, 10),
                 TextWrapping = TextWrapping.Wrap
             };
             ContentPanel.Children.Add(description);
@@ -357,7 +357,7 @@ namespace WindowsTweaks
                        "• Редактор реестра • Безопасный режим (с подменю) • Службы",
                 FontSize = 12,
                 Foreground = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
-                Margin = new Thickness(0, 0, 0, 12),
+                Margin = new Thickness(0, 0, 0, 8),
                 TextWrapping = TextWrapping.Wrap
             });
 
@@ -391,7 +391,7 @@ namespace WindowsTweaks
                        "• Панель настроек (система, дисплей, звук, питание и др.)",
                 FontSize = 12,
                 Foreground = new SolidColorBrush(Color.FromRgb(168, 196, 174)),
-                Margin = new Thickness(0, 0, 0, 12),
+                Margin = new Thickness(0, 0, 0, 8),
                 TextWrapping = TextWrapping.Wrap,
                 LineHeight = 20
             });
@@ -459,10 +459,10 @@ namespace WindowsTweaks
             return new TextBlock
             {
                 Text = text,
-                FontSize = 20,
+                FontSize = 15,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
-                Margin = new Thickness(0, 0, 0, 20)
+                Margin = new Thickness(0, 0, 0, 12)
             };
         }
 
@@ -471,7 +471,7 @@ namespace WindowsTweaks
             var panel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 15, 0, 10)
+                Margin = new Thickness(0, 10, 0, 8)
             };
 
             var line1 = new System.Windows.Shapes.Rectangle
@@ -508,8 +508,8 @@ namespace WindowsTweaks
                 BorderBrush  = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(6),
-                Margin       = new Thickness(0, 3, 0, 3),
-                Padding      = new Thickness(12, 8, 12, 8),
+                Margin       = new Thickness(0, 1, 0, 1),
+                Padding      = new Thickness(8, 4, 8, 4),
                 Cursor       = System.Windows.Input.Cursors.Hand
             };
 
@@ -587,7 +587,7 @@ namespace WindowsTweaks
         private enum ButtonKind { Add, Remove, Neutral }
 
         private StackPanel MakeButtonRow() =>
-            new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 14) };
+            new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 7, 0, 10) };
 
         private Border MakeActionButton(string text, ButtonKind kind, RoutedEventHandler onClick)
         {
@@ -617,18 +617,18 @@ namespace WindowsTweaks
                 Background      = new SolidColorBrush(bgNormal),
                 BorderBrush     = new SolidColorBrush(border),
                 BorderThickness = new Thickness(1),
-                CornerRadius    = new CornerRadius(7),
-                Padding         = new Thickness(16, 10, 16, 10),
-                Margin          = new Thickness(0, 0, 8, 0),
+                CornerRadius    = new CornerRadius(5),
+                Padding         = new Thickness(8, 4, 8, 4),
+                Margin          = new Thickness(0, 0, 6, 0),
                 Cursor          = System.Windows.Input.Cursors.Hand,
-                MinWidth        = 200
+                MinWidth        = 130
             };
 
             var label = new TextBlock
             {
                 Text       = text,
                 Foreground = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
-                FontSize   = 13,
+                FontSize   = 11,
                 FontWeight = FontWeights.SemiBold,
                 TextAlignment = TextAlignment.Center
             };
@@ -649,7 +649,7 @@ namespace WindowsTweaks
             {
                 Height          = 1,
                 Background      = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
-                Margin          = new Thickness(0, 14, 0, 18)
+                Margin          = new Thickness(0, 10, 0, 12)
             });
         }
 
@@ -658,10 +658,10 @@ namespace WindowsTweaks
             ContentPanel.Children.Add(new TextBlock
             {
                 Text       = text,
-                FontSize   = 13,
+                FontSize   = 11,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 120)),
-                Margin     = new Thickness(0, 10, 0, 10)
+                Margin     = new Thickness(0, 8, 0, 6)
             });
         }
 
@@ -677,15 +677,15 @@ namespace WindowsTweaks
                     : new SolidColorBrush(Color.FromRgb(120, 40, 38)),
                 BorderThickness = new Thickness(1),
                 CornerRadius    = new CornerRadius(6),
-                Padding         = new Thickness(12, 7, 12, 7),
-                Margin          = new Thickness(0, 0, 0, 12)
+                Padding         = new Thickness(10, 5, 10, 5),
+                Margin          = new Thickness(0, 0, 0, 8)
             };
 
             var row = new StackPanel { Orientation = Orientation.Horizontal };
             row.Children.Add(new TextBlock
             {
                 Text      = installed ? "✓" : "✕",
-                FontSize  = 14,
+                FontSize  = 12,
                 Foreground = installed
                     ? new SolidColorBrush(Color.FromRgb(76, 175, 120))
                     : new SolidColorBrush(Color.FromRgb(200, 80, 75)),
@@ -714,9 +714,9 @@ namespace WindowsTweaks
                 Background      = new SolidColorBrush(Color.FromRgb(24, 32, 25)),
                 BorderBrush     = new SolidColorBrush(Color.FromRgb(36, 51, 40)),
                 BorderThickness = new Thickness(1),
-                CornerRadius    = new CornerRadius(7),
-                Margin          = new Thickness(0, 4, 0, 4),
-                Padding         = new Thickness(14, 9, 14, 9),
+                CornerRadius    = new CornerRadius(5),
+                Margin          = new Thickness(0, 2, 0, 2),
+                Padding         = new Thickness(8, 5, 8, 5),
                 Cursor          = System.Windows.Input.Cursors.Hand
             };
 
@@ -728,19 +728,19 @@ namespace WindowsTweaks
             // Иконка
             var iconBorder = new Border
             {
-                Width           = 34,
-                Height          = 34,
+                Width           = 22,
+                Height          = 22,
                 Background      = new SolidColorBrush(Color.FromRgb(28, 52, 38)),
                 BorderBrush     = new SolidColorBrush(Color.FromRgb(46, 100, 65)),
                 BorderThickness = new Thickness(1),
-                CornerRadius    = new CornerRadius(6),
-                Margin          = new Thickness(0, 0, 12, 0),
+                CornerRadius    = new CornerRadius(4),
+                Margin          = new Thickness(0, 0, 8, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
             iconBorder.Child = new TextBlock
             {
                 Text                = emoji,
-                FontSize            = 15,
+                FontSize            = 11,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment   = VerticalAlignment.Center
             };
@@ -751,15 +751,15 @@ namespace WindowsTweaks
             {
                 Text       = name,
                 Foreground = new SolidColorBrush(Color.FromRgb(232, 245, 236)),
-                FontSize   = 13,
+                FontSize   = 11,
                 FontWeight = FontWeights.SemiBold
             });
             textStack.Children.Add(new TextBlock
             {
                 Text       = description,
                 Foreground = new SolidColorBrush(Color.FromRgb(107, 155, 117)),
-                FontSize   = 11,
-                Margin     = new Thickness(0, 2, 0, 0)
+                FontSize   = 10,
+                Margin     = new Thickness(0, 1, 0, 0)
             });
 
             // Стрелка
@@ -767,7 +767,7 @@ namespace WindowsTweaks
             {
                 Text                = "›",
                 Foreground          = new SolidColorBrush(Color.FromRgb(61, 120, 85)),
-                FontSize            = 22,
+                FontSize            = 13,
                 VerticalAlignment   = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Right
             };
@@ -882,7 +882,7 @@ namespace WindowsTweaks
         private void AboutButton_Click(object sender, RoutedEventArgs e)
         {
             ThemedDialog.Show(
-                "WindowsTweaks Pro Edition v3.0\n\n" +
+                "WindowsTweaks Pro Edition v3.0.1\n\n" +
                 "Профессиональный инструмент для оптимизации\n" +
                 "и настройки операционной системы Windows.\n\n" +
                 "ОСНОВНЫЕ ВОЗМОЖНОСТИ:\n" +
@@ -892,13 +892,13 @@ namespace WindowsTweaks
                 "• Управление службами Windows\n" +
                 "• Мгновенное применение и отмена твиков\n" +
                 "• Контекстные меню «Этот компьютер» и Рабочего стола\n\n" +
-                "НОВОЕ В v3.0:\n" +
+                "НОВОЕ В v3.0.1:\n" +
                 "• +16 новых твиков (игры, приватность, сеть, UI)\n" +
                 "• Отложенный запуск служб\n" +
                 "• Восстановление CMD в контекстном меню\n" +
                 "• Подсказки для каждого твика\n\n" +
                 "Разработчик: Виталий Николаевич (vitalikkontr)\n" +
-                "Версия: 3.0  |  21.02.2026  |  © 2026 WindowsTweaks Pro",
+                "Версия: 3.0.1  |  23.02.2026  |  © 2026 WindowsTweaks Pro",
                 "О программе WindowsTweaks Pro",
                 DialogIcon.Info, this);
         }
@@ -1216,8 +1216,8 @@ namespace WindowsTweaks
             var win = new Window
             {
                 Title                 = title,
-                Width                 = 680,
-                Height                = 580,
+                Width                 = 560,
+                Height                = 480,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner                 = this,
                 WindowStyle           = WindowStyle.None,
@@ -1312,7 +1312,7 @@ namespace WindowsTweaks
 
             var outerPad = new Border
             {
-                Padding    = new Thickness(48, 24, 48, 24),
+                Padding    = new Thickness(32, 16, 32, 16),
                 Background = Brushes.Transparent
             };
 
@@ -1347,7 +1347,7 @@ namespace WindowsTweaks
                 BorderBrush     = new SolidColorBrush(Color.FromRgb(46, 125, 79)),
                 BorderThickness = new Thickness(1),
                 CornerRadius    = new CornerRadius(8),
-                Padding         = new Thickness(36, 9, 36, 9),
+                Padding         = new Thickness(24, 7, 24, 7),
                 Cursor          = System.Windows.Input.Cursors.Hand,
                 HorizontalAlignment = HorizontalAlignment.Center  // ← по центру
             };

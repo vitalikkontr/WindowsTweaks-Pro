@@ -38,9 +38,8 @@
             <SolidColorBrush x:Key="SuccessBrush"         Color="#27AE60"/>
 
 
-            <!-- ===== Тонкая полоса прокрутки (глобально для всего приложения) ===== -->
+            <!-- ===== Тонкая полоса прокрутки ===== -->
 
-            <!-- Ползунок -->
             <Style x:Key="SlimScrollThumb" TargetType="Thumb">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -53,15 +52,14 @@
                 </Setter>
             </Style>
 
-            <!-- Глобальный стиль ScrollBar (без x:Key = применяется везде) -->
             <Style TargetType="ScrollBar">
-                <Setter Property="Width" Value="5"/>
-                <Setter Property="MinWidth" Value="5"/>
+                <Setter Property="Width" Value="4"/>
+                <Setter Property="MinWidth" Value="4"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ScrollBar">
-                            <Border Background="#1A251C" CornerRadius="3" Width="5">
+                            <Border Background="#1A251C" CornerRadius="3" Width="4">
                                 <Track x:Name="PART_Track" IsDirectionReversed="True">
                                     <Track.DecreaseRepeatButton>
                                         <RepeatButton Opacity="0" IsHitTestVisible="False"/>
@@ -79,7 +77,6 @@
                 </Setter>
             </Style>
 
-            <!-- ScrollViewer -->
             <Style TargetType="ScrollViewer">
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
@@ -112,8 +109,8 @@
                 <Setter Property="Background"       Value="{StaticResource PrimaryBrush}"/>
                 <Setter Property="Foreground"       Value="{StaticResource TextBrush}"/>
                 <Setter Property="BorderThickness"  Value="0"/>
-                <Setter Property="Padding"          Value="16,9"/>
-                <Setter Property="FontSize"         Value="13"/>
+                <Setter Property="Padding"          Value="12,6"/>
+                <Setter Property="FontSize"         Value="11"/>
                 <Setter Property="FontWeight"       Value="SemiBold"/>
                 <Setter Property="Cursor"           Value="Hand"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -122,7 +119,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border"
                                     Background="{TemplateBinding Background}"
-                                    CornerRadius="6"
+                                    CornerRadius="5"
                                     Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center"
                                                   VerticalAlignment="Center"/>
@@ -153,7 +150,7 @@
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="border"
                                     Background="{TemplateBinding Background}"
-                                    CornerRadius="6"
+                                    CornerRadius="5"
                                     Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
@@ -178,10 +175,10 @@
 
             <Style x:Key="ModernCheckBox" TargetType="CheckBox">
                 <Setter Property="Foreground"       Value="{StaticResource TextDimBrush}"/>
-                <Setter Property="FontSize"         Value="13"/>
+                <Setter Property="FontSize"         Value="11"/>
                 <Setter Property="Cursor"           Value="Hand"/>
-                <Setter Property="Margin"           Value="0,3"/>
-                <Setter Property="Padding"          Value="8,4"/>
+                <Setter Property="Margin"           Value="0,1"/>
+                <Setter Property="Padding"          Value="6,3"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Template">
                     <Setter.Value>
@@ -196,17 +193,17 @@
                                     </Grid.ColumnDefinitions>
                                     <Border x:Name="CheckBoxBorder"
                                             Grid.Column="0"
-                                            Width="18" Height="18"
+                                            Width="14" Height="14"
                                             Background="#0D1410"
                                             BorderBrush="{StaticResource AccentDimBrush}"
                                             BorderThickness="1.5"
                                             CornerRadius="3"
                                             VerticalAlignment="Center"
-                                            Margin="0,0,9,0">
+                                            Margin="0,0,7,0">
                                         <Path x:Name="CheckMark"
-                                              Data="M 0,5 L 4,9 L 10,0"
+                                              Data="M 0,3 L 3,7 L 8,0"
                                               Stroke="{StaticResource AccentBrush}"
-                                              StrokeThickness="2"
+                                              StrokeThickness="1.8"
                                               StrokeStartLineCap="Round"
                                               StrokeEndLineCap="Round"
                                               StrokeLineJoin="Round"
@@ -239,13 +236,13 @@
             </Style>
 
 
-            <!-- ===== Разделитель секций ===== -->
+            <!-- ===== Заголовок секции ===== -->
 
             <Style x:Key="SectionHeader" TargetType="TextBlock">
                 <Setter Property="Foreground"  Value="{StaticResource AccentBrush}"/>
-                <Setter Property="FontSize"    Value="11"/>
+                <Setter Property="FontSize"    Value="10"/>
                 <Setter Property="FontWeight"  Value="SemiBold"/>
-                <Setter Property="Margin"      Value="0,16,0,8"/>
+                <Setter Property="Margin"      Value="0,12,0,6"/>
                 <Setter Property="Opacity"     Value="0.85"/>
             </Style>
 
