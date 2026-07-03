@@ -8,13 +8,12 @@ namespace WindowsTweaks
 {
     /// <summary>
     /// Класс для управления контекстным меню "Этот компьютер"
-    /// Исправленная версия с правильными путями реестра
+    /// Исправленная версия с правильными путями реестра и экранированием команд
     /// </summary>
     public static class ComputerContextMenu
     {
         // Правильный базовый путь для контекстного меню "Этот компьютер"
-        private const string BaseRegistryPath =
-@"Software\Classes\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\shell";
+        private const string BaseRegistryPath = @"Software\Classes\CLSID\{20D04FE0-3AEA-1069-A2D8-08002B30309D}\shell";
 
         private static readonly Dictionary<string, MenuItem> SystemTools =
         new Dictionary<string, MenuItem>
@@ -67,7 +66,6 @@ namespace WindowsTweaks
                 "mmc.exe services.msc"
             )
         };
-
 
         // -------------------- Добавление инструментов --------------------
         public static string AddSystemTools()
@@ -140,7 +138,6 @@ namespace WindowsTweaks
 
         private static void AddMenuItem(string keyName, MenuItem item)
         {
-            // Используем HKEY_CURRENT_USER - не требует прав администратора
             string fullPath = $"{BaseRegistryPath}\\{keyName}";
 
             using (var key = Registry.CurrentUser.CreateSubKey(fullPath, true))
@@ -164,9 +161,9 @@ namespace WindowsTweaks
         // Добавление подменю "Безопасный режим"
         private static void AddSafeModeMenu()
         {
-            string safeModeKey = $"{BaseRegistryPath}\\SafeMode";
+            string safeModeKey = $@"{BaseRegistryPath}\SafeMode";
 
-            // Главный пункт меню
+            // 1. Создаем Главный пункт меню
             using (var key = Registry.CurrentUser.CreateSubKey(safeModeKey, true))
             {
                 if (key == null)
@@ -177,42 +174,48 @@ namespace WindowsTweaks
                 key.SetValue("SubCommands", "", RegistryValueKind.String);
             }
 
-            // Подменю: Перезагрузка
-            CreateSafeModeSubItem("01Reboot", "Перезагрузка", "shell32.dll,238",
-                "shutdown.exe /r /o /f /t 00");
+            string subShellPath = $@"{safeModeKey}\shell";
 
-            // Подменю: Безопасный режим
-            CreateSafeModeSubItem("02SafeMode", "Безопасный режим", "shell32.dll,47",
-                "bcdedit /set {current} safeboot minimal & shutdown /r /t 0");
+            // 2. Создаем подпункты с исправленным экранированием кавычек для PowerShell
 
-            // Подменю: Безопасный режим с командной строкой
-            CreateSafeModeSubItem("03SafeModeCmd", "Безопасный режим с поддержкой командной строки",
-                "cmd.exe,0", "bcdedit /set {current} safeboot minimal & bcdedit /set {current} safebootalternateshell yes & shutdown /r /t 0");
+            // Перезагрузка в среду восстановления (Диагностика)
+            CreateSafeModeSubItem(subShellPath, "01Reboot", "Перезагрузка в меню диагностики", "shell32.dll,238",
+                "powershell.exe -WindowStyle Hidden -Command \"Start-Process shutdown.exe -ArgumentList \\\"/r /o /f /t 0\\\" -Verb RunAs\"");
 
-            // Подменю: Безопасный режим с сетью
-            CreateSafeModeSubItem("04SafeModeNetwork", "Безопасный режим с поддержкой сети",
-                "netcenter.dll,0", "bcdedit /set {current} safeboot network & shutdown /r /t 0");
+            // Безопасный режим (Минимальный)
+            CreateSafeModeSubItem(subShellPath, "02SafeMode", "Включить безопасный режим", "shell32.dll,47",
+                "powershell.exe -WindowStyle Hidden -Command \"Start-Process bcdedit -ArgumentList \\\"/set {current} safeboot minimal\\\" -Verb RunAs; shutdown /r /t 0\"");
+
+            // Безопасный режим с командной строкой (Две последовательные команды bcdedit)
+            CreateSafeModeSubItem(subShellPath, "03SafeModeCmd", "Безопасный режим с командной строкой", "cmd.exe,0",
+                "powershell.exe -WindowStyle Hidden -Command \"Start-Process bcdedit -ArgumentList \\\"/set {current} safeboot minimal\\\" -Verb RunAs; Start-Process bcdedit -ArgumentList \\\"/set {current} safebootalternateshell yes\\\" -Verb RunAs; shutdown /r /t 0\"");
+
+            // Безопасный режим с сетью
+            CreateSafeModeSubItem(subShellPath, "04SafeModeNetwork", "Безопасный режим с поддержкой сети", "netcenter.dll,0",
+                "powershell.exe -WindowStyle Hidden -Command \"Start-Process bcdedit -ArgumentList \\\"/set {current} safeboot network\\\" -Verb RunAs; shutdown /r /t 0\"");
+
+            // Отмена безопасного режима
+            CreateSafeModeSubItem(subShellPath, "05SafeModeCancel", "Вернуть обычную загрузку Windows", "shell32.dll,81",
+                "powershell.exe -WindowStyle Hidden -Command \"Start-Process bcdedit -ArgumentList \\\"/deletevalue {current} safeboot\\\" -Verb RunAs; shutdown /r /t 0\"");
         }
 
-        private static void CreateSafeModeSubItem(string keyName, string title, string icon, string command)
+        private static void CreateSafeModeSubItem(string parentShellPath, string subItemName, string title, string icon, string command)
         {
-            string subItemPath = $"{BaseRegistryPath}\\SafeMode\\shell\\{keyName}";
+            string itemKeyPath = $@"{parentShellPath}\{subItemName}";
 
-            using (var key = Registry.CurrentUser.CreateSubKey(subItemPath, true))
+            using (var key = Registry.CurrentUser.CreateSubKey(itemKeyPath, true))
             {
-                if (key != null)
-                {
-                    key.SetValue("MUIVerb", title, RegistryValueKind.String);
-                    key.SetValue("Icon", icon, RegistryValueKind.String);
-                    key.SetValue("HasLUAShield", "", RegistryValueKind.String);
-                }
-            }
+                if (key == null) return;
 
-            using (var cmdKey = Registry.CurrentUser.CreateSubKey($"{subItemPath}\\command", true))
-            {
-                if (cmdKey != null)
+                key.SetValue("", title, RegistryValueKind.String);
+                key.SetValue("Icon", icon, RegistryValueKind.String);
+
+                using (var cmdKey = key.CreateSubKey("command", true))
                 {
-                    cmdKey.SetValue("", command, RegistryValueKind.String);
+                    if (cmdKey != null)
+                    {
+                        cmdKey.SetValue("", command, RegistryValueKind.String);
+                    }
                 }
             }
         }
@@ -231,7 +234,7 @@ namespace WindowsTweaks
             }
         }
 
-        // -------------------- Удаление инструментов --------------------
+        // -------------------- Удаление инструментов (БЕЗОПАСНОЕ) --------------------
         public static string RemoveSystemTools()
         {
             int successCount = 0;
@@ -242,17 +245,30 @@ namespace WindowsTweaks
             result.AppendLine("────────────────────────────────────────────");
             result.AppendLine();
 
-            // Удаляем всю ветку shell целиком (быстрее и надёжнее)
+            // Безопасное удаление: удаляем только НАШИ ключи поочередно, чтобы не задеть чужие твики в shell
+            foreach (var toolKey in SystemTools.Keys)
+            {
+                try
+                {
+                    string fullPath = $"{BaseRegistryPath}\\{toolKey}";
+                    Registry.CurrentUser.DeleteSubKeyTree(fullPath, false);
+                    successCount++;
+                }
+                catch { failCount++; }
+            }
+
+            // Удаляем блок SafeMode
             try
             {
-                Registry.CurrentUser.DeleteSubKeyTree(BaseRegistryPath, false);
-                result.AppendLine("✓ Все пункты меню успешно удалены");
-                successCount = SystemTools.Count + 1; // +1 за SafeMode
+                string safeModeFullPath = $"{BaseRegistryPath}\\SafeMode";
+                Registry.CurrentUser.DeleteSubKeyTree(safeModeFullPath, false);
+                successCount++;
+                result.AppendLine("✓ Все добавленные пункты и меню SafeMode успешно удалены");
             }
             catch (Exception ex)
             {
-                result.AppendLine($"✗ Ошибка при удалении: {ex.Message}");
-                failCount = SystemTools.Count + 1;
+                result.AppendLine($"✗ Ошибка при удалении блока SafeMode: {ex.Message}");
+                failCount++;
             }
 
             // Восстанавливаем стандартный пункт "Управление"
@@ -304,7 +320,6 @@ namespace WindowsTweaks
                         installedCount++;
                 }
 
-                // Проверяем SafeMode
                 using var safeModeKey = key.OpenSubKey("SafeMode");
                 if (safeModeKey != null)
                     installedCount++;
@@ -317,39 +332,7 @@ namespace WindowsTweaks
             }
         }
 
-        public static List<string> GetInstalledTools()
-        {
-            var installed = new List<string>();
-
-            try
-            {
-                using var key = Registry.CurrentUser.OpenSubKey(BaseRegistryPath);
-                if (key != null)
-                {
-                    foreach (var toolKey in SystemTools.Keys)
-                    {
-                        using var subKey = key.OpenSubKey(toolKey);
-                        if (subKey != null)
-                        {
-                            installed.Add(SystemTools[toolKey].Title);
-                        }
-                    }
-
-                    // Проверяем SafeMode
-                    using var safeModeKey = key.OpenSubKey("SafeMode");
-                    if (safeModeKey != null)
-                    {
-                        installed.Add("Безопасный режим");
-                    }
-                }
-            }
-            catch { }
-
-            return installed;
-        }
-
-        // -------------------- Проверка прав администратора --------------------
-        public static bool IsAdministrator()
+        private static bool IsAdministrator()
         {
             try
             {
@@ -368,7 +351,6 @@ namespace WindowsTweaks
         {
             try
             {
-                // Уведомляем Windows об изменении ассоциаций
                 SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
             }
             catch { }
@@ -395,7 +377,7 @@ namespace WindowsTweaks
         // -------------------- Диагностика --------------------
         public static string GetDiagnosticInfo()
         {
-            System.Text.StringBuilder info = new System.Text.StringBuilder();
+            var info = new System.Text.StringBuilder();
 
             info.AppendLine("◆  ДИАГНОСТИКА КОНТЕКСТНОГО МЕНЮ");
             info.AppendLine("────────────────────────────────────────────");
@@ -424,21 +406,28 @@ namespace WindowsTweaks
                         info.AppendLine("◇  УСТАНОВЛЕННЫЕ ИНСТРУМЕНТЫ");
                         info.AppendLine("────────────────────────────────────────────");
 
-                        foreach (var toolKey in SystemTools.Keys)
+                        foreach (var subKeyName in subKeys)
                         {
-                            using var subKey = key.OpenSubKey(toolKey);
+                            if (subKeyName.Equals("SafeMode", StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            using var subKey = key.OpenSubKey(subKeyName);
                             if (subKey != null)
                             {
-                                string title = subKey.GetValue("", "").ToString();
-                                info.AppendLine($"✓  {title}");
+                                string title = subKey.GetValue("MUIVerb", subKey.GetValue("", "")).ToString();
+                                if (string.IsNullOrWhiteSpace(title)) title = "Инструмент без названия";
+                                info.AppendLine($"✓  {title} [{subKeyName}]");
                             }
                         }
 
-                        // Проверяем SafeMode
+                        info.AppendLine();
+                        info.AppendLine("◇  ДОПОЛНИТЕЛЬНЫЕ РЕЖИМЫ");
+                        info.AppendLine("────────────────────────────────────────────");
+
                         using var safeModeKey = key.OpenSubKey("SafeMode");
                         if (safeModeKey != null)
                         {
-                            string title = safeModeKey.GetValue("MUIVerb", "").ToString();
+                            string title = safeModeKey.GetValue("MUIVerb", "Перезагрузка в SafeMode").ToString();
                             info.AppendLine($"✓  {title}");
 
                             using var shellKey = safeModeKey.OpenSubKey("shell");
@@ -453,10 +442,8 @@ namespace WindowsTweaks
             }
             catch (Exception ex)
             {
-                info.AppendLine($"✗  Ошибка: {ex.Message}");
+                info.AppendLine($"✗  Ошибка чтения реестра: {ex.Message}");
             }
-
-
 
             return info.ToString();
         }

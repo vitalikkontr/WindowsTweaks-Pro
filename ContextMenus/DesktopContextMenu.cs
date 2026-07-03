@@ -16,7 +16,7 @@ namespace WindowsTweaks
     public static class DesktopContextMenu
     {
         private const string BasePath = @"Software\Classes\Directory\Background\shell";
-        
+
         // Основные инструменты
         private static readonly Dictionary<string, MenuItem> MainTools = new Dictionary<string, MenuItem>
         {
@@ -24,7 +24,10 @@ namespace WindowsTweaks
             ["RegistryEditor"] = new MenuItem("Редактор реестра", "regedit.exe", "regedit"),
             ["Programs"] = new MenuItem("Программы и компоненты", "appwiz.cpl", "control appwiz.cpl"),
             ["ControlPanel"] = new MenuItem("Панель управления", "shell32.dll,21", "control"),
-            ["AdminTools"] = new MenuItem("Администрирование", "imageres.dll,109", "control admintools")
+            ["AdminTools"] = new MenuItem("Администрирование", "imageres.dll,109", "control admintools"),
+
+            // Добавили сетевые подключения в общий список утилит
+            ["NetworkConnections"] = new MenuItem("Сетевые подключения", "ncpa.cpl", "control ncpa.cpl")
         };
 
         // -------------------- ДОБАВЛЕНИЕ ИНСТРУМЕНТОВ --------------------
@@ -203,11 +206,10 @@ namespace WindowsTweaks
             CreateSubItem(menuKey, "02DiskManagement", "Управление дисками", "imageres.dll,-109", "mmc.exe diskmgmt.msc");
             CreateSubItem(menuKey, "03Services", "Службы", "filemgmt.dll", "mmc.exe services.msc");
             CreateSubItem(menuKey, "04SystemProperties", "Свойства системы", "sysdm.cpl", "control sysdm.cpl");
-            CreateSubItem(menuKey, "05NetworkConnections", "Сетевые подключения", "netcenter.dll", "control ncpa.cpl");
             CreateSubItem(menuKey, "06FolderOptions", "Параметры папок", "shell32.dll,-210", "control folders");
             CreateSubItem(menuKey, "07MouseProperties", "Указатели мыши", "main.cpl", "control main.cpl");
             CreateSubItem(menuKey, "08SystemInfo", "Сведения о системе", "msinfo32.exe", "msinfo32.exe");
-            CreateSubItem(menuKey, "09WinVer", "Версия системы", "shell32.dll,-300", "winver.exe");
+            CreateSubItem(menuKey, "09WinVer", "Версия Windows", "shell32.dll,-300", "winver.exe");
             CreateSubItem(menuKey, "10EventViewer", "Просмотр событий", "eventvwr.exe", "mmc.exe eventvwr.msc");
         }
 
@@ -343,39 +345,7 @@ namespace WindowsTweaks
             }
         }
 
-        public static List<string> GetInstalledDesktopTools()
-        {
-            var installed = new List<string>();
-
-            try
-            {
-                using var key = Registry.CurrentUser.OpenSubKey(BasePath);
-                if (key != null)
-                {
-                    foreach (var toolKey in MainTools.Keys)
-                    {
-                        using var subKey = key.OpenSubKey(toolKey);
-                        if (subKey != null)
-                        {
-                            installed.Add(MainTools[toolKey].Title);
-                        }
-                    }
-
-                    using var personalizationKey = key.OpenSubKey("PersonalizationPlus");
-                    if (personalizationKey != null)
-                        installed.Add("Персонализация+ (подменю)");
-
-                    using var utilitiesKey = key.OpenSubKey("SystemUtilities");
-                    if (utilitiesKey != null)
-                        installed.Add("Системные утилиты (подменю)");
-                }
-            }
-            catch { }
-
-            return installed;
-        }
-
-        public static bool IsAdministrator()
+        private static bool IsAdministrator()
         {
             try
             {

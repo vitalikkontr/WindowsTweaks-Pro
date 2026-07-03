@@ -9,7 +9,7 @@
 
   <AssemblyName>WindowsTweaks</AssemblyName>
   <RootNamespace>WindowsTweaks</RootNamespace>
-  <Version>3.0</Version>
+  <Version>3.0.2.0</Version>
   <Authors>Виталий Николаевич (vitalikkontr)</Authors>
   <Company>WindowsTweaks Pro Edition</Company>
   <Product>WindowsTweaks Pro - Системные твики Windows</Product>
@@ -19,8 +19,8 @@
   <ApplicationIcon>app.ico</ApplicationIcon>
   <PackageProjectUrl>https://github.com/vitalikkontr/WindowsTweaks-Pro</PackageProjectUrl>
   <PackageIcon>app_icon.png</PackageIcon>
-  <AssemblyVersion>3.0</AssemblyVersion>
-  <FileVersion>3.0</FileVersion>
+  <AssemblyVersion>3.0.2.0</AssemblyVersion>
+  <FileVersion>3.0.2.0</FileVersion>
 </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

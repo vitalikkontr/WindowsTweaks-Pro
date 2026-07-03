@@ -1,19 +1,20 @@
 [Setup]
 AppId={{B7E3F8A2-C941-4D5E-9B12-8FA6E2D1C3E7}}
 AppName=WindowsTweaks
-AppVersion=3.0
-AppVerName=WindowsTweaks Professional 3.0
+AppVersion=3.0.2.0
+AppVerName=WindowsTweaks Professional 3.0.2.0
 AppPublisher=Виталий Николаевич (vitalikkontr)
 AppPublisherURL=https://github.com/vitalikkontr/WindowsTweaks-Pro
 AppSupportURL=https://github.com/vitalikkontr/WindowsTweaks-Pro/issues
 AppUpdatesURL=https://github.com/vitalikkontr/WindowsTweaks-Pro/releases
 AppCopyright=Copyright © 2026 vitalikkontr
+LicenseFile=Assets\LICENSE.rtf
 
 DefaultDirName={autopf}\WindowsTweaksProfessional
 DefaultGroupName=WindowsTweaks
 DisableProgramGroupPage=yes
 OutputDir=C:\Release\Setup
-OutputBaseFilename=WindowsTweaks-Professional-Setup-v3.0
+OutputBaseFilename=WindowsTweaks-Professional-Setup-v3.0.2.0
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -95,4 +96,3 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   // Не делаем ничего, автозапуск отключён
 end;
-

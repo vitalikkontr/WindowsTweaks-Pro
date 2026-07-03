@@ -1,360 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace WindowsTweaks
 {
-    /// <summary>
-    /// Движок для применения системных твиков Windows
-    /// Добавлена поддержка отмены твиков + 13 новых твиков
-    /// </summary>
-    public class TweakEngine
+    public partial class TweakEngine
     {
-        private readonly HashSet<string> enabledTweaks;
-        private readonly Dictionary<string, TweakAction> tweakActions;
-        private readonly List<string> appliedTweaks;
-        private readonly List<string> failedTweaks;
-        private readonly List<string> lastOperationTweaks;
-        private readonly string statePath;
-
-        public TweakEngine()
-        {
-            enabledTweaks = new HashSet<string>();
-            appliedTweaks = new List<string>();
-            failedTweaks = new List<string>();
-            tweakActions = InitializeTweakActions();
-
-            statePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "WindowsTweaks",
-                "applied_tweaks.txt"
-            );
-
-            LoadAppliedTweaksState();
-
-            lastOperationTweaks = new List<string>();
-
-            // Синхронизируем enabledTweaks с уже применёнными твиками.
-            // Без этого при старте enabledTweaks пуст, и кнопка "Отменить"
-            // считает ВСЕ применённые твики "отключёнными" — и предлагает их отменить.
-            foreach (var tweak in appliedTweaks)
-                enabledTweaks.Add(tweak);
-        }
-
-        public void EnableTweak(string tweakKey)
-        {
-            enabledTweaks.Add(tweakKey);
-        }
-
-        public void DisableTweak(string tweakKey)
-        {
-            enabledTweaks.Remove(tweakKey);
-        }
-
-        public bool IsTweakApplied(string tweakKey)
-        {
-            return appliedTweaks.Contains(tweakKey);
-        }
-
-        public bool IsTweakEnabled(string tweakKey)
-        {
-            return enabledTweaks.Contains(tweakKey);
-        }
-
-        public List<string> GetAppliedTweaks()
-        {
-            return new List<string>(appliedTweaks);
-        }
-
-        /// <summary>
-        /// Возвращает список твиков, которые включены (галочка стоит), но ещё не применены к системе.
-        /// Используется кнопкой "Применить".
-        /// </summary>
-        public List<string> GetEnabledButNotAppliedTweaks()
-        {
-            return enabledTweaks
-                .Where(t => !appliedTweaks.Contains(t))
-                .ToList();
-        }
-
-        /// <summary>
-        /// Применяет конкретный список твиков (по кнопке "Применить").
-        /// </summary>
-        public async Task ApplySelectedTweaksAsync(List<string> tweakKeys)
-        {
-            failedTweaks.Clear();
-            lastOperationTweaks.Clear();
-
-            await Task.Run(() =>
-            {
-                foreach (var tweakKey in tweakKeys)
-                {
-                    if (tweakActions.ContainsKey(tweakKey))
-                    {
-                        try
-                        {
-                            tweakActions[tweakKey].Apply();
-                            if (!appliedTweaks.Contains(tweakKey))
-                                appliedTweaks.Add(tweakKey);
-                            lastOperationTweaks.Add(tweakKey);
-                            Debug.WriteLine($"✓ Применён твик: {tweakKey}");
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            failedTweaks.Add($"{tweakKey} (требуются права администратора)");
-                        }
-                        catch (Exception ex)
-                        {
-                            failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                        }
-                    }
-                }
-            });
-
-            SaveAppliedTweaksState();
-            LogResults();
-        }
-
-        public async Task ApplyAllTweaksAsync()
-        {
-            failedTweaks.Clear();
-            lastOperationTweaks.Clear();
-
-            await Task.Run(() =>
-            {
-                foreach (var tweakKey in enabledTweaks)
-                {
-                    if (tweakActions.ContainsKey(tweakKey))
-                    {
-                        try
-                        {
-                            tweakActions[tweakKey].Apply();
-                            if (!appliedTweaks.Contains(tweakKey))
-                                appliedTweaks.Add(tweakKey);
-                            lastOperationTweaks.Add(tweakKey);
-                            Debug.WriteLine($"✓ Успешно применен твик: {tweakKey}");
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            failedTweaks.Add($"{tweakKey} (требуются права администратора)");
-                        }
-                        catch (Exception ex)
-                        {
-                            failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                        }
-                    }
-                }
-            });
-
-            SaveAppliedTweaksState();
-            LogResults();
-        }
-
-        public async Task ApplySelectedTweakAsync(string tweakKey)
-        {
-            await Task.Run(() =>
-            {
-                if (tweakActions.ContainsKey(tweakKey))
-                {
-                    try
-                    {
-                        tweakActions[tweakKey].Apply();
-                        if (!appliedTweaks.Contains(tweakKey))
-                            appliedTweaks.Add(tweakKey);
-                        SaveAppliedTweaksState();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"✗ Ошибка применения твика {tweakKey}: {ex.Message}");
-                        throw;
-                    }
-                }
-            });
-        }
-
-        public async Task RevertAllTweaksAsync()
-        {
-            failedTweaks.Clear();
-
-            await Task.Run(() =>
-            {
-                foreach (var tweakKey in appliedTweaks.ToList())
-                {
-                    if (tweakActions.ContainsKey(tweakKey))
-                    {
-                        try
-                        {
-                            tweakActions[tweakKey].Revert();
-                            Debug.WriteLine($"✓ Успешно отменен твик: {tweakKey}");
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            failedTweaks.Add($"{tweakKey} (требуются права администратора)");
-                        }
-                        catch (Exception ex)
-                        {
-                            failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                        }
-                    }
-                }
-
-                appliedTweaks.Clear();
-                enabledTweaks.Clear();
-            });
-
-            SaveAppliedTweaksState();
-            LogResults();
-        }
-
-        public async Task RevertSelectedTweaksAsync(IEnumerable<string> tweaksToRevert)
-        {
-            failedTweaks.Clear();
-
-            await Task.Run(() =>
-            {
-                foreach (var tweakKey in tweaksToRevert)
-                {
-                    if (tweakActions.ContainsKey(tweakKey))
-                    {
-                        try
-                        {
-                            tweakActions[tweakKey].Revert();
-                            appliedTweaks.Remove(tweakKey);
-                            Debug.WriteLine($"✓ Успешно отменен твик: {tweakKey}");
-                        }
-                        catch (Exception ex)
-                        {
-                            failedTweaks.Add($"{tweakKey} ({ex.Message})");
-                        }
-                    }
-                }
-            });
-
-            SaveAppliedTweaksState();
-            LogResults();
-        }
-
-        public async Task RevertSelectedTweakAsync(string tweakKey)
-        {
-            await Task.Run(() =>
-            {
-                if (tweakActions.ContainsKey(tweakKey))
-                {
-                    try
-                    {
-                        tweakActions[tweakKey].Revert();
-                        appliedTweaks.Remove(tweakKey);
-                        SaveAppliedTweaksState();
-                        Debug.WriteLine($"✓ Успешно отменен твик: {tweakKey}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"✗ Ошибка отмены твика {tweakKey}: {ex.Message}");
-                        throw;
-                    }
-                }
-            });
-        }
-
-        private void LoadAppliedTweaksState()
-        {
-            try
-            {
-                if (File.Exists(statePath))
-                {
-                    var lines = File.ReadAllLines(statePath);
-                    appliedTweaks.Clear();
-                    appliedTweaks.AddRange(lines.Where(l => !string.IsNullOrWhiteSpace(l)));
-                }
-            }
-            catch { }
-        }
-
-        private void SaveAppliedTweaksState()
-        {
-            try
-            {
-                string directory = Path.GetDirectoryName(statePath);
-                if (!Directory.Exists(directory))
-                    Directory.CreateDirectory(directory);
-                File.WriteAllLines(statePath, appliedTweaks);
-            }
-            catch { }
-        }
-
-        public string GetApplyResults()
-        {
-            var result = new System.Text.StringBuilder();
-            result.AppendLine("◆  РЕЗУЛЬТАТЫ ПРИМЕНЕНИЯ ТВИКОВ");
-            result.AppendLine("────────────────────────────────────────────");
-            result.AppendLine();
-
-            if (lastOperationTweaks.Count > 0)
-            {
-                result.AppendLine($"✓  Успешно применено:  {lastOperationTweaks.Count}");
-                foreach (var tweak in lastOperationTweaks)
-                {
-                    if (tweakActions.ContainsKey(tweak))
-                        result.AppendLine($"   •  {tweakActions[tweak].Description}");
-                }
-                result.AppendLine();
-            }
-
-            if (failedTweaks.Count > 0)
-            {
-                result.AppendLine($"✗  Ошибок:  {failedTweaks.Count}");
-                foreach (var tweak in failedTweaks)
-                    result.AppendLine($"   •  {tweak}");
-                result.AppendLine();
-            }
-
-            result.AppendLine("────────────────────────────────────────────");
-            return result.ToString();
-        }
-
-        private void LogResults()
-        {
-            try
-            {
-                string logPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "WindowsTweaks", "Logs");
-                Directory.CreateDirectory(logPath);
-                string logFile = Path.Combine(logPath, $"tweaks_{DateTime.Now:yyyyMMdd_HHmmss}.log");
-                File.WriteAllText(logFile, GetApplyResults());
-            }
-            catch { }
-        }
-
-        public void CreateRestorePoint(string description)
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName        = "powershell.exe",
-                    Arguments       = $"-Command \"Checkpoint-Computer -Description '{description}' -RestorePointType 'MODIFY_SETTINGS'\"",
-                    Verb            = "runas",
-                    UseShellExecute = true,
-                    WindowStyle     = ProcessWindowStyle.Hidden
-                };
-
-                var process = Process.Start(psi);
-                process?.WaitForExit(60000);
-
-                if (process?.ExitCode != 0)
-                    throw new Exception("Не удалось создать точку восстановления");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка создания точки восстановления: {ex.Message}");
-            }
-        }
-
         private Dictionary<string, TweakAction> InitializeTweakActions()
         {
             return new Dictionary<string, TweakAction>
@@ -544,6 +194,112 @@ namespace WindowsTweaks
                 ),
 
                 // ═══════════════════════════════════════════════
+                // ПРОГРАММЫ И ПРОВОДНИК (или КОНТЕКСТНОЕ МЕНЮ)
+                // ═══════════════════════════════════════════════
+
+                ["EmptyFolderMenu"] = new TweakAction(
+    "Пункт ПКМ 'Удалить содержимое папки'",
+    () => {
+        // Меняем корень на LocalMachine для 100% срабатывания в системе
+        string folderShellPath = @"SOFTWARE\Classes\Directory\shell\EmptyFolder";
+
+        using (var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(folderShellPath, true))
+        {
+            if (key != null)
+            {
+                key.SetValue("", "Удалить содержимое папки", RegistryValueKind.String);
+                // Иконка папки со стрелочкой или крестиком из imageres.dll
+                key.SetValue("Icon", "imageres.dll,257", RegistryValueKind.String);
+            }
+        }
+
+        using (var cmdKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey($"{folderShellPath}\\command", true))
+        {
+            if (cmdKey != null)
+            {
+                // Используем строку без лишнего escape-хаоса, Windows отлично понимает такой формат:
+                string cmdCommand = @"cmd.exe /c ""cd /d ""%1"" && del /s /f /q *.* && rd /s /q .""";
+
+                cmdKey.SetValue("", cmdCommand, RegistryValueKind.String);
+            }
+        }
+    },
+    () => {
+        // Откат твика из HKLM
+        string folderShellPath = @"SOFTWARE\Classes\Directory\shell\EmptyFolder";
+        Microsoft.Win32.Registry.LocalMachine.DeleteSubKeyTree(folderShellPath, false);
+    }
+),
+                // ═══════════════════════════════════════════════
+                // СИСТЕМНЫЕ УТИЛИТЫ / ИНТЕРФЕЙС
+                // ═══════════════════════════════════════════════
+
+                ["EnableClassicPhotoViewer"] = new TweakAction(
+    "Включить классический Просмотр фотографий Windows",
+    () => {
+        // Путь к регистрации самого просмотрщика как обработчика
+        string photoViewerPath = @"SOFTWARE\Microsoft\Windows Photo Viewer\Capabilities\FileAssociations";
+
+        using (var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(photoViewerPath, true))
+        {
+            if (key != null)
+            {
+                // Привязываем форматы к классическому движку PhotoViewer
+                key.SetValue(".jpg", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".jpeg", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".png", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".gif", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".bmp", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".tiff", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".tif", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".wdp", "PhotoViewer.FileAssoc.Wdp", RegistryValueKind.String);
+            }
+        }
+
+        // Дополнительно регистрируем классы в HKCR (через HKLM\SOFTWARE\Classes), чтобы Windows видела их в меню "Открыть с помощью"
+        string[] classes = { "PhotoViewer.FileAssoc.Tiff", "PhotoViewer.FileAssoc.Wdp" };
+        foreach (var cls in classes)
+        {
+            string shellOpenPath = $@"SOFTWARE\Classes\{cls}\shell\open";
+            using (var openKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(shellOpenPath, true))
+            {
+                if (openKey != null)
+                {
+                    openKey.SetValue("MuiVerb", "@%ProgramFiles%\\Windows Photo Viewer\\photoviewer.dll,-3043", RegistryValueKind.String);
+                }
+            }
+
+            using (var cmdKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey($@"{shellOpenPath}\command", true))
+            {
+                if (cmdKey != null)
+                {
+                    // Запуск через rundll32 системной библиотеки photoviewer.dll
+                    cmdKey.SetValue("", @"rundll32.exe ""%ProgramFiles%\Windows Photo Viewer\photoviewer.dll"", ImageView_Fullscreen %1", RegistryValueKind.String);
+                }
+            }
+        }
+    },
+    () => {
+        // Откат твика — удаляем ассоциации из Capabilities
+        string photoViewerPath = @"SOFTWARE\Microsoft\Windows Photo Viewer\Capabilities\FileAssociations";
+        using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(photoViewerPath, true))
+        {
+            if (key != null)
+            {
+                string[] extensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".wdp" };
+                foreach (var ext in extensions)
+                {
+                    key.DeleteValue(ext, false);
+                }
+            }
+        }
+
+        // Сами классы PhotoViewer.FileAssoc можно не удалять, без ассоциаций они "спят", 
+        // но при желании можно очистить ветки SOFTWARE\Classes\PhotoViewer.FileAssoc.Tiff и Wdp
+    }
+),
+
+                // ═══════════════════════════════════════════════
                 // КОНФИДЕНЦИАЛЬНОСТЬ
                 // ═══════════════════════════════════════════════
 
@@ -626,6 +382,75 @@ namespace WindowsTweaks
                         SetRegistryValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "PreInstalledAppsEnabled", 1, RegistryValueKind.DWord);
                     }
                 ),
+
+                // ═══════════════════════════════════════════════
+                // СИСТЕМНЫЕ УТИЛИТЫ / ИНТЕРФЕЙС
+                // ═══════════════════════════════════════════════
+
+                ["EnableClassicPhotoViewer"] = new TweakAction(
+    "Включить классический Просмотр фотографий Windows",
+    () => {
+        // Путь к регистрации самого просмотрщика как обработчика
+        string photoViewerPath = @"SOFTWARE\Microsoft\Windows Photo Viewer\Capabilities\FileAssociations";
+
+        using (var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(photoViewerPath, true))
+        {
+            if (key != null)
+            {
+                // Привязываем форматы к классическому движку PhotoViewer
+                key.SetValue(".jpg", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".jpeg", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".png", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".gif", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".bmp", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".tiff", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".tif", "PhotoViewer.FileAssoc.Tiff", RegistryValueKind.String);
+                key.SetValue(".wdp", "PhotoViewer.FileAssoc.Wdp", RegistryValueKind.String);
+            }
+        }
+
+        // Дополнительно регистрируем классы в HKCR (через HKLM\SOFTWARE\Classes), чтобы Windows видела их в меню "Открыть с помощью"
+        string[] classes = { "PhotoViewer.FileAssoc.Tiff", "PhotoViewer.FileAssoc.Wdp" };
+        foreach (var cls in classes)
+        {
+            string shellOpenPath = $@"SOFTWARE\Classes\{cls}\shell\open";
+            using (var openKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(shellOpenPath, true))
+            {
+                if (openKey != null)
+                {
+                    openKey.SetValue("MuiVerb", "@%ProgramFiles%\\Windows Photo Viewer\\photoviewer.dll,-3043", RegistryValueKind.String);
+                }
+            }
+
+            using (var cmdKey = Microsoft.Win32.Registry.LocalMachine.CreateSubKey($@"{shellOpenPath}\command", true))
+            {
+                if (cmdKey != null)
+                {
+                    // Запуск через rundll32 системной библиотеки photoviewer.dll
+                    cmdKey.SetValue("", @"rundll32.exe ""%ProgramFiles%\Windows Photo Viewer\photoviewer.dll"", ImageView_Fullscreen %1", RegistryValueKind.String);
+                }
+            }
+        }
+    },
+    () => {
+        // Откат твика — удаляем ассоциации из Capabilities
+        string photoViewerPath = @"SOFTWARE\Microsoft\Windows Photo Viewer\Capabilities\FileAssociations";
+        using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(photoViewerPath, true))
+        {
+            if (key != null)
+            {
+                string[] extensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".wdp" };
+                foreach (var ext in extensions)
+                {
+                    key.DeleteValue(ext, false);
+                }
+            }
+        }
+
+        // Сами классы PhotoViewer.FileAssoc можно не удалять, без ассоциаций они "спят", 
+        // но при желании можно очистить ветки SOFTWARE\Classes\PhotoViewer.FileAssoc.Tiff и Wdp
+    }
+),
 
                 // НОВЫЕ ТВИКИ КОНФИДЕНЦИАЛЬНОСТИ
 
@@ -1129,129 +954,5 @@ namespace WindowsTweaks
             };
         }
 
-        private void SetRegistryValue(string keyPath, string valueName, object value, RegistryValueKind valueKind)
-        {
-            try
-            {
-                string[] parts = keyPath.Split('\\');
-                RegistryKey baseKey = parts[0] switch
-                {
-                    "HKEY_LOCAL_MACHINE" => Registry.LocalMachine,
-                    "HKEY_CURRENT_USER" => Registry.CurrentUser,
-                    "HKEY_CLASSES_ROOT" => Registry.ClassesRoot,
-                    "HKEY_USERS" => Registry.Users,
-                    "HKEY_CURRENT_CONFIG" => Registry.CurrentConfig,
-                    _ => throw new ArgumentException($"Неверный корневой ключ реестра: {parts[0]}")
-                };
-
-                string subKeyPath = string.Join("\\", parts.Skip(1));
-
-                using (RegistryKey key = baseKey.CreateSubKey(subKeyPath, true))
-                {
-                    if (key == null)
-                        throw new Exception($"Не удалось создать или открыть ключ: {subKeyPath}");
-                    key.SetValue(valueName, value, valueKind);
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                throw new UnauthorizedAccessException($"Недостаточно прав для записи в реестр: {keyPath}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка записи в реестр ({keyPath}\\{valueName}): {ex.Message}");
-            }
-        }
-
-        private void DeleteRegistryValue(string keyPath, string valueName)
-        {
-            try
-            {
-                string[] parts = keyPath.Split('\\');
-                RegistryKey baseKey = parts[0] switch
-                {
-                    "HKEY_LOCAL_MACHINE" => Registry.LocalMachine,
-                    "HKEY_CURRENT_USER" => Registry.CurrentUser,
-                    "HKEY_CLASSES_ROOT" => Registry.ClassesRoot,
-                    "HKEY_USERS" => Registry.Users,
-                    "HKEY_CURRENT_CONFIG" => Registry.CurrentConfig,
-                    _ => throw new ArgumentException($"Неверный корневой ключ реестра: {parts[0]}")
-                };
-
-                string subKeyPath = string.Join("\\", parts.Skip(1));
-
-                using (RegistryKey key = baseKey.OpenSubKey(subKeyPath, true))
-                {
-                    if (key != null)
-                    {
-                        try { key.DeleteValue(valueName, false); }
-                        catch { }
-                    }
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                throw new UnauthorizedAccessException($"Недостаточно прав для удаления значения в реестре: {keyPath}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка удаления значения в реестре ({keyPath}\\{valueName}): {ex.Message}");
-            }
-        }
-
-        private void ExecuteCommand(string command)
-        {
-            try
-            {
-                // UseShellExecute=true нужен для Verb="runas",
-                // но тогда CreateNoWindow не работает — используем WindowStyle.Hidden
-                var psi = new ProcessStartInfo
-                {
-                    FileName               = "cmd.exe",
-                    Arguments              = $"/c {command}",
-                    UseShellExecute        = true,
-                    WindowStyle            = ProcessWindowStyle.Hidden,
-                    Verb                   = "runas"
-                };
-
-                var process = Process.Start(psi);
-
-                if (process != null)
-                {
-                    bool finished = process.WaitForExit(30000);
-                    if (!finished)
-                    {
-                        process.Kill();
-                        throw new TimeoutException($"Команда выполнялась слишком долго: {command}");
-                    }
-                }
-            }
-            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
-            {
-                throw new OperationCanceledException("Операция отменена пользователем (UAC)");
-            }
-            catch (UnauthorizedAccessException)
-            {
-                throw new UnauthorizedAccessException($"Недостаточно прав для выполнения команды: {command}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Ошибка выполнения команды ({command}): {ex.Message}");
-            }
-        }
-
-        private class TweakAction
-        {
-            public string Description { get; }
-            public Action Apply { get; }
-            public Action Revert { get; }
-
-            public TweakAction(string description, Action apply, Action revert)
-            {
-                Description = description;
-                Apply = apply;
-                Revert = revert;
-            }
-        }
     }
 }
