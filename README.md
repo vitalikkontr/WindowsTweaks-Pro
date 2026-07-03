@@ -1,4 +1,4 @@
-<div align="center"><img width="608" height="565" alt="_windowstweaks" src="https://github.com/user-attachments/assets/9e0a04de-606c-4a17-9dbb-7f6c9610209d" />
+<div align="center"><img width="608" height="565" alt="8" src="https://github.com/user-attachments/assets/627cb88b-858f-4457-9550-41857c45cb4e" />
 
 # WindowsTweaks Профессиональная ⚡
 
