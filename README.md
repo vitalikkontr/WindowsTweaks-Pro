@@ -93,6 +93,6 @@ dotnet build
 
 <div align="center">
 
-## Сделано с ❤️ в Украине
+## *WindowsTweaks — сделано с ❤️ в Украине*
 
 </div>
